@@ -98,6 +98,32 @@ class Policy {
 	);
 
 	/**
+	 * Options an AI connection can never change, even through another
+	 * plugin's ability: site address, admin email, registration and roles,
+	 * active plugins and theme, and search engine visibility. Viagent's own
+	 * options and every user's roles are protected too.
+	 */
+	const PROTECTED_OPTIONS = array(
+		'siteurl',
+		'home',
+		'admin_email',
+		'new_admin_email',
+		'users_can_register',
+		'default_role',
+		'active_plugins',
+		'recently_activated',
+		'uninstall_plugins',
+		'template',
+		'stylesheet',
+		'current_theme',
+		'blog_public',
+		'permalink_structure',
+		'upload_path',
+		'upload_url_path',
+		'WPLANG',
+	);
+
+	/**
 	 * User ID of the AI connection for the current request.
 	 *
 	 * @var int
@@ -114,6 +140,10 @@ class Policy {
 		self::$guarded_user = (int) $user_id;
 		// map_meta_cap also applies to super admins, unlike user_has_cap.
 		add_filter( 'map_meta_cap', array( self::class, 'block_admin_caps' ), PHP_INT_MAX, 4 );
+		add_filter( 'pre_update_option', array( self::class, 'block_protected_option' ), PHP_INT_MAX, 3 );
+		add_filter( 'update_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
+		add_filter( 'add_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
+		add_filter( 'delete_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
 		// Content filtering was set up when the user was set; redo it without unfiltered_html.
 		kses_init();
 	}
@@ -131,6 +161,40 @@ class Policy {
 			return array( 'do_not_allow' );
 		}
 		return $caps;
+	}
+
+	/**
+	 * Keeps protected options unchanged during AI requests.
+	 *
+	 * @param mixed  $value     New value.
+	 * @param string $option    Option name.
+	 * @param mixed  $old_value Current value.
+	 * @return mixed
+	 */
+	public static function block_protected_option( $value, $option, $old_value ) {
+		global $wpdb;
+		// Viagent's own options (pause switch, tool switches…) are the site owner's alone.
+		if ( in_array( $option, self::PROTECTED_OPTIONS, true ) || 0 === strpos( $option, 'viagent_' ) || $wpdb->get_blog_prefix() . 'user_roles' === $option ) {
+			return $old_value;
+		}
+		return $value;
+	}
+
+	/**
+	 * Refuses changes to any user's roles, capabilities or user level during AI requests.
+	 *
+	 * @param null|bool $check    Short-circuit value.
+	 * @param int       $user_id  User ID.
+	 * @param string    $meta_key Meta key.
+	 * @return null|bool
+	 */
+	public static function block_role_meta( $check, $user_id, $meta_key ) {
+		global $wpdb;
+		$prefix = $wpdb->get_blog_prefix();
+		if ( in_array( $meta_key, array( $prefix . 'capabilities', $prefix . 'user_level' ), true ) ) {
+			return false;
+		}
+		return $check;
 	}
 
 	/**

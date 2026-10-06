@@ -249,7 +249,7 @@ class Authorize {
 			</fieldset>
 
 			<p class="viagent-consent__note">
-				<?php esc_html_e( 'Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent.', 'viagent' ); ?>
+				<?php esc_html_e( 'The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent.', 'viagent' ); ?>
 			</p>
 
 			<?php foreach ( $params as $name => $value ) : ?>

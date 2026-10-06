@@ -60,7 +60,7 @@ AI apps that support MCP prompts (such as Claude Desktop, Claude Code and VS Cod
 * **Drafts only** – new connections can write and edit drafts, but not publish or delete, until you allow it.
 * **Undo anything** – every action is logged under Activity, and content changes can be undone with one click.
 * **Trash, not delete** – deleted content goes to the trash. Permanent deletion is off unless you turn it on.
-* **No site administration, ever** – even when connected through an administrator account, AI apps are blocked from installing, activating, updating or editing plugins and themes, updating WordPress, editing files, managing user accounts, importing or exporting, and network administration. They also cannot change your site address, admin email or search engine visibility. Those stay in your hands in the WordPress dashboard.
+* **No site administration, ever** – even when connected through an administrator account, AI apps are blocked from installing, activating, updating or editing plugins and themes, updating WordPress, editing files, managing user accounts, importing or exporting, and network administration. They also cannot change your site address, admin email, user registration and roles, search engine visibility or Viagent's own safety settings. Those stay in your hands in the WordPress dashboard.
 * **Pause switch** – block every AI app instantly, and resume when you're ready.
 * **Revoke any app** at any time; it's disconnected immediately.
 * **Standards-based security** – OAuth 2.1 with PKCE for sign-in, and hashed connection keys and tokens.
@@ -151,6 +151,8 @@ AI apps such as Claude, ChatGPT or Cursor connect to your site; your site does n
 
 = 1.0.2 =
 * AI connections can no longer use administrative capabilities (plugins, themes, updates, files, users, import/export, network administration), even when connected through an administrator account.
+* AI connections cannot change critical options (site address, admin email, registration, default role, active plugins and theme, search engine visibility), user roles or Viagent's own settings, even through other plugins' abilities.
+* The approval screen and connect wizard explain that site administration is always blocked for AI apps.
 * Removed the multisite network tools, the PHP error log tool and the search engine visibility setting.
 * "Full control" is now called "Site manager".
 * Trashed items are only listed for users who can edit that content type, and search only returns published content.

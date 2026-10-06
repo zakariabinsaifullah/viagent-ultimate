@@ -512,7 +512,7 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 				{ sprintf(
 					/* translators: %s: user display name */
 					__(
-						'The AI will act as you (%s), so it can never do more than your own account can.',
+						'The AI will act as you (%s), so it can never do more than your own account can. Site administration (plugins, themes, users, updates) is always blocked for AI apps.',
 						'viagent'
 					),
 					settings.user

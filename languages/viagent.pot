@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-06T05:10:28+00:00\n"
+"POT-Creation-Date: 2026-10-06T05:15:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: viagent\n"
@@ -1191,7 +1191,7 @@ msgid "What may it do?"
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:252
-msgid "Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent."
+msgid "The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent."
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:261
@@ -1209,7 +1209,7 @@ msgid "We couldn’t connect this app"
 msgstr ""
 
 #: includes/auth/oauth/class-oauth.php:552
-#: includes/security/class-policy.php:156
+#: includes/security/class-policy.php:222
 #: src/admin/screens/connect.js:40
 msgid "Read only"
 msgstr ""
@@ -1235,7 +1235,7 @@ msgid "Publish, edit and trash content, and moderate comments."
 msgstr ""
 
 #: includes/auth/oauth/class-oauth.php:576
-#: includes/security/class-policy.php:158
+#: includes/security/class-policy.php:224
 #: src/admin/screens/connect.js:59
 msgid "Site manager"
 msgstr ""
@@ -2176,21 +2176,21 @@ msgstr ""
 msgid "Form name (optional, default: all forms with entries)."
 msgstr ""
 
-#: includes/security/class-policy.php:157
+#: includes/security/class-policy.php:223
 msgid "Content editor"
 msgstr ""
 
-#: includes/security/class-policy.php:225
+#: includes/security/class-policy.php:291
 msgid "Draft-only mode is on, so the status can only be \"draft\" or \"pending\". Ask the site owner to publish it from WordPress, or to allow publishing in Viagent."
 msgstr ""
 
 #. translators: %s: post status
-#: includes/security/class-policy.php:243
+#: includes/security/class-policy.php:309
 #, php-format
 msgid "Draft-only mode is on and this item is \"%s\", so it cannot be changed. Create a new draft instead, or ask the site owner for more access in Viagent."
 msgstr ""
 
-#: includes/security/class-policy.php:305
+#: includes/security/class-policy.php:371
 msgid "Too many requests. Please wait a minute and try again."
 msgstr ""
 
@@ -2553,7 +2553,7 @@ msgstr ""
 #. translators: %s: user display name
 #: src/admin/screens/connect.js:514
 #, js-format
-msgid "The AI will act as you (%s), so it can never do more than your own account can."
+msgid "The AI will act as you (%s), so it can never do more than your own account can. Site administration (plugins, themes, users, updates) is always blocked for AI apps."
 msgstr ""
 
 #: src/admin/screens/connect.js:534
