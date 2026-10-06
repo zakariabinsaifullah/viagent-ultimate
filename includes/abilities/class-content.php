@@ -740,15 +740,18 @@ class Content {
 	}
 
 	/**
-	 * Statuses the current user may list for a post type.
+	 * Statuses the current user may list for a post type. Anything beyond
+	 * "publish" requires the type's own edit capability.
 	 *
-	 * @param string $post_type Post type. Empty for "any exposed type".
+	 * @param string $post_type Post type.
 	 * @return string[]
 	 */
-	public static function readable_statuses( $post_type = '' ) {
-		$type = $post_type ? get_post_type_object( $post_type ) : null;
-		$can  = $type ? current_user_can( $type->cap->edit_posts ) : current_user_can( 'edit_posts' );
-		return $can ? array( 'publish', 'draft', 'pending', 'private', 'future' ) : array( 'publish' );
+	public static function readable_statuses( $post_type ) {
+		$type = get_post_type_object( $post_type );
+		if ( $type && current_user_can( $type->cap->edit_posts ) ) {
+			return array( 'publish', 'draft', 'pending', 'private', 'future', 'trash' );
+		}
+		return array( 'publish' );
 	}
 
 	/**
@@ -819,16 +822,15 @@ class Content {
 
 		$allowed = self::readable_statuses( $post_type );
 		$status  = $input['status'] ?? 'any';
-		if ( 'trash' === $status ) {
-			$allowed[] = 'trash';
-		}
 		if ( 'any' !== $status && ! in_array( $status, $allowed, true ) ) {
 			return new WP_Error( 'viagent_forbidden_status', __( 'You are not allowed to list items with that status.', 'viagent' ) );
 		}
+		// "any" never includes the trash.
+		$any = array_values( array_diff( $allowed, array( 'trash' ) ) );
 
 		$args = array(
 			'post_type'           => $post_type,
-			'post_status'         => 'any' === $status ? self::readable_statuses( $post_type ) : $status,
+			'post_status'         => 'any' === $status ? $any : $status,
 			'posts_per_page'      => (int) ( $input['per_page'] ?? 20 ),
 			'paged'               => (int) ( $input['page'] ?? 1 ),
 			'orderby'             => $input['orderby'] ?? 'date',

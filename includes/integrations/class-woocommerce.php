@@ -4,7 +4,7 @@
  *
  * Products follow the same safety rules as posts (draft-only mode, trash,
  * undo). Orders, coupons and customers contain business and personal data,
- * so they need Full control.
+ * so they need the Site manager level.
  *
  * @package Viagent
  */

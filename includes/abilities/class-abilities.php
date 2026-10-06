@@ -31,7 +31,7 @@ class Abilities {
 			'viagent-menus'       => array( __( 'Menus', 'viagent' ), __( 'Navigation menus.', 'viagent' ) ),
 			'viagent-settings'    => array( __( 'Settings', 'viagent' ), __( 'General, reading and discussion settings.', 'viagent' ) ),
 			'viagent-extensions'  => array( __( 'Plugins & themes', 'viagent' ), __( 'Installed plugins and themes (read only).', 'viagent' ) ),
-			'viagent-diagnostics' => array( __( 'Diagnostics', 'viagent' ), __( 'Site health and error logs.', 'viagent' ) ),
+			'viagent-diagnostics' => array( __( 'Diagnostics', 'viagent' ), __( 'Site health overview.', 'viagent' ) ),
 		);
 
 		foreach ( $categories as $slug => $data ) {

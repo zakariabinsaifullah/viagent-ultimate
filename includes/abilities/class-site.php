@@ -39,7 +39,7 @@ class Site {
 			'viagent/search-content',
 			array(
 				'label'               => __( 'Search content', 'viagent' ),
-				'description'         => __( 'Full-text search across posts, pages and other public content types. Returns matching items with ID, type, title and link.', 'viagent' ),
+				'description'         => __( 'Full-text search across published posts, pages and other public content. Returns matching items with ID, type, title and link. To find drafts, use list_posts with search.', 'viagent' ),
 				'category'            => 'viagent-site',
 				'input_schema'        => array(
 					'type'                 => 'object',
@@ -125,8 +125,8 @@ class Site {
 		$query = new \WP_Query(
 			array(
 				's'                   => $input['query'],
-				'post_type'           => array_keys( Content::readable_post_types() ),
-				'post_status'         => Content::readable_statuses(),
+				'post_type'           => array_values( array_filter( array_keys( Content::readable_post_types() ), 'is_post_type_viewable' ) ),
+				'post_status'         => 'publish',
 				'posts_per_page'      => (int) ( $input['per_page'] ?? 20 ),
 				'ignore_sticky_posts' => true,
 				'perm'                => 'readable',

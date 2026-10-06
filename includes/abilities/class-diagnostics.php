@@ -1,6 +1,6 @@
 <?php
 /**
- * Diagnostics abilities: site health overview and the PHP error log.
+ * Diagnostics abilities: a read-only site health overview.
  *
  * @package Viagent
  */
@@ -8,7 +8,6 @@
 namespace Viagent\Abilities;
 
 use Viagent\Security\Policy;
-use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,8 +15,6 @@ defined( 'ABSPATH' ) || exit;
  * Diagnostics abilities.
  */
 class Diagnostics {
-
-	const MAX_LOG_BYTES = 65536;
 
 	/**
 	 * Registers abilities.
@@ -32,29 +29,6 @@ class Diagnostics {
 				'execute'     => array( self::class, 'get_site_health' ),
 				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
-			)
-		);
-
-		$log_meta                               = Abilities::read_meta( Policy::ADMIN );
-		$log_meta['viagent']['default_enabled'] = false;
-
-		Abilities::add(
-			'get-error-log',
-			array(
-				'category'    => 'viagent-diagnostics',
-				'label'       => __( 'Get PHP error log', 'viagent' ),
-				'description' => __( 'Returns the last lines of the PHP / WordPress debug log to help find errors.', 'viagent' ),
-				'input'       => array(
-					'lines' => array(
-						'type'    => 'integer',
-						'minimum' => 1,
-						'maximum' => 200,
-						'default' => 50,
-					),
-				),
-				'execute'     => array( self::class, 'get_error_log' ),
-				'permission'  => 'manage_options',
-				'meta'        => $log_meta,
 			)
 		);
 	}
@@ -94,51 +68,6 @@ class Diagnostics {
 				'plugins' => isset( $plugins->response ) ? count( $plugins->response ) : 0,
 				'themes'  => isset( $themes->response ) ? count( $themes->response ) : 0,
 			),
-		);
-	}
-
-	/**
-	 * Path of the active error log, if any.
-	 *
-	 * @return string
-	 */
-	private static function log_path() {
-		if ( defined( 'WP_DEBUG_LOG' ) && is_string( WP_DEBUG_LOG ) && WP_DEBUG_LOG ) {
-			return WP_DEBUG_LOG;
-		}
-		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			return WP_CONTENT_DIR . '/debug.log';
-		}
-		return (string) ini_get( 'error_log' );
-	}
-
-	/**
-	 * Tail of the error log.
-	 *
-	 * @param array $input Input.
-	 * @return array|WP_Error
-	 */
-	public static function get_error_log( $input ) {
-		$path = self::log_path();
-		if ( '' === $path || ! is_readable( $path ) ) {
-			return new WP_Error( 'viagent_no_log', __( 'No readable error log. The site owner can turn on WP_DEBUG_LOG to start logging.', 'viagent' ) );
-		}
-
-		$size   = filesize( $path );
-		$handle = fopen( $path, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
-		if ( ! $handle ) {
-			return new WP_Error( 'viagent_no_log', __( 'The error log could not be opened.', 'viagent' ) );
-		}
-		fseek( $handle, max( 0, $size - self::MAX_LOG_BYTES ) );
-		$tail = (string) stream_get_contents( $handle );
-		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
-
-		$lines = array_slice( preg_split( '/\r\n|\n/', trim( $tail ) ), -1 * (int) ( $input['lines'] ?? 50 ) );
-
-		return array(
-			'file'  => basename( $path ),
-			'size'  => size_format( $size ),
-			'lines' => $lines,
 		);
 	}
 }

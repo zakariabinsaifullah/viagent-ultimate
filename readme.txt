@@ -4,7 +4,7 @@ Tags: mcp, ai, ai agent, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,8 +37,8 @@ Claude (Claude.ai, Claude Desktop and Claude Code), ChatGPT, Cursor, VS Code wit
 * **Media library** – upload images from a link, write alt text and captions, set featured images.
 * **Categories, tags and custom taxonomies.**
 * **Comments** – read, reply and moderate.
-* **Menus and site settings**, plus a read-only view of users, plugins and themes (with Full control).
-* **Site health** and, if you allow it, the PHP error log.
+* **Menus and basic site settings** (title, tagline, homepage, timezone, comments), plus a read-only view of users, plugins and themes (with the Site manager level).
+* **Site health** – a read-only technical overview (versions, pending updates, HTTPS, cron).
 
 = Integrations with popular plugins =
 
@@ -56,11 +56,11 @@ AI apps that support MCP prompts (such as Claude Desktop, Claude Code and VS Cod
 
 = Safe by default =
 
-* **You choose the access** – Read only, Content editor or Full control, per app.
+* **You choose the access** – Read only, Content editor or Site manager, per app.
 * **Drafts only** – new connections can write and edit drafts, but not publish or delete, until you allow it.
 * **Undo anything** – every action is logged under Activity, and content changes can be undone with one click.
 * **Trash, not delete** – deleted content goes to the trash. Permanent deletion is off unless you turn it on.
-* **Protected by design** – AI apps cannot install, activate or deactivate plugins, switch themes, create or edit user accounts, or change your site address or admin email. Those stay in your hands in the WordPress dashboard.
+* **No site administration, ever** – even when connected through an administrator account, AI apps are blocked from installing, activating, updating or editing plugins and themes, updating WordPress, editing files, managing user accounts, importing or exporting, and network administration. They also cannot change your site address, admin email or search engine visibility. Those stay in your hands in the WordPress dashboard.
 * **Pause switch** – block every AI app instantly, and resume when you're ready.
 * **Revoke any app** at any time; it's disconnected immediately.
 * **Standards-based security** – OAuth 2.1 with PKCE for sign-in, and hashed connection keys and tokens.
@@ -68,7 +68,7 @@ AI apps that support MCP prompts (such as Claude Desktop, Claude Code and VS Cod
 = Also included =
 
 * **Compact mode** for apps with tool limits (like Cursor): three tools that give access to everything.
-* **Multisite support** – every site has its own connections and activity, and super admins can work on the content of any site in the network.
+* **Multisite support** – every site has its own connections, settings and activity.
 * **Connection check** that spots common hosting problems and explains how to fix them.
 * **WP-CLI commands** – `wp viagent key-create`, `key-list`, `key-revoke`, `activity-list` and `activity-revert`.
 * **Developer friendly** – built on the WordPress Abilities API, with filters to add tools, tasks and integrations.
@@ -102,7 +102,7 @@ Yes. Cursor and VS Code have one-click install buttons, and Windsurf, Codex, Gem
 
 = Is it safe to let AI change my site? =
 
-Every app acts as the WordPress user who connected it and can never do more than that user. New connections are limited to drafts, deletions go to the trash, everything is logged, and content changes can be undone with one click. You can pause all AI access at any time.
+Every app acts as the WordPress user who connected it and can never do more than that user. Administrative capabilities are always blocked for AI connections, whatever the user's role. New connections are limited to drafts, deletions go to the trash, everything is logged, and content changes can be undone with one click. You can pause all AI access at any time.
 
 = What should I say to my AI first? =
 
@@ -126,7 +126,7 @@ Open **Tools → Viagent → Connect an app**. Apps that are set up but not conn
 
 = Does it work on multisite? =
 
-Yes. Network-activate Viagent to give every site its own connections and activity. Super admins also get tools to list sites and to work on the content of any site in the network.
+Yes. Network-activate Viagent to give every site its own connections and activity. Each connection only works on the site it was created on.
 
 = What happens to my data if I delete the plugin? =
 
@@ -134,7 +134,7 @@ Nothing is removed unless you turn on **Delete all Viagent data** under **Tools 
 
 = Where is the source code of the admin screens? =
 
-The readable JavaScript and SCSS source is included in the `src` folder. The compiled files in `build` are created with @wordpress/scripts. The full development setup is on GitHub at https://github.com/zakariabinsaifullah/viagent: clone it, then run `npm install && npm run build`.
+The readable JavaScript and SCSS source is included in the `src` folder. The compiled files in `build` are created with @wordpress/scripts. The full development setup is in the [Viagent GitHub repository](https://github.com/zakariabinsaifullah/viagent). Clone it, then run `npm install && npm run build`.
 
 == External services ==
 
@@ -148,6 +148,12 @@ The connect wizard shows setup snippets and links to each AI app's own documenta
 AI apps such as Claude, ChatGPT or Cursor connect to your site; your site does not connect to them. The content they read is handled under the privacy policy of the app you use.
 
 == Changelog ==
+
+= 1.0.2 =
+* AI connections can no longer use administrative capabilities (plugins, themes, updates, files, users, import/export, network administration), even when connected through an administrator account.
+* Removed the multisite network tools, the PHP error log tool and the search engine visibility setting.
+* "Full control" is now called "Site manager".
+* Trashed items are only listed for users who can edit that content type, and search only returns published content.
 
 = 1.0.1 =
 * Renamed the plugin to Viagent.
@@ -166,6 +172,9 @@ AI apps such as Claude, ChatGPT or Cursor connect to your site; your site does n
 * Safety controls: access levels, drafts-only mode, activity log with undo, and a pause switch.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+AI connections can no longer perform any site administration, even through an administrator account.
 
 = 1.0.1 =
 Renamed to Viagent. Plugin, theme and user management tools were removed; those tasks stay in the WordPress dashboard.

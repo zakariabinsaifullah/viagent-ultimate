@@ -2,7 +2,7 @@
 /**
  * Form tools for Contact Form 7 (with Flamingo for entries), WPForms and
  * Gravity Forms: list forms with embed codes, read their fields, and read
- * submitted entries. Entries contain personal data, so they need Full control.
+ * submitted entries. Entries contain personal data, so they need the Site manager level.
  *
  * @package Viagent
  */

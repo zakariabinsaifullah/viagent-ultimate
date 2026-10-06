@@ -109,7 +109,6 @@ final class Plugin {
 			'integrations/class-seo.php',
 			'integrations/class-acf.php',
 			'integrations/class-forms.php',
-			'integrations/class-network.php',
 		);
 
 		foreach ( $files as $file ) {

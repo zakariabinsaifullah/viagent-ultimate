@@ -73,10 +73,6 @@ class Settings {
 				'type'        => 'boolean',
 				'description' => __( 'Comments must be manually approved.', 'viagent' ),
 			),
-			'blog_public'            => array(
-				'type'        => 'boolean',
-				'description' => __( 'Allow search engines to index the site.', 'viagent' ),
-			),
 			'site_icon'              => array(
 				'type'        => 'integer',
 				'minimum'     => 0,

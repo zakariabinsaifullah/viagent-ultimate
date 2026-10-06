@@ -1,7 +1,8 @@
 <?php
 /**
  * Access levels and safety rules: draft-only mode, permanent deletes,
- * per-tool switches, rate limits and the kill switch.
+ * per-tool switches, rate limits, the kill switch, and the capability guard
+ * that keeps AI connections away from site administration.
  *
  * @package Viagent
  */
@@ -35,6 +36,104 @@ class Policy {
 	const PRIVATE_STATUSES = array( 'draft', 'pending', 'auto-draft' );
 
 	/**
+	 * Capabilities an AI connection can never use, whatever the connected
+	 * user's role (administrators and super admins included). Site
+	 * administration stays with people in the WordPress dashboard.
+	 */
+	const BLOCKED_CAPS = array(
+		// Plugins and themes.
+		'install_plugins',
+		'activate_plugins',
+		'activate_plugin',
+		'deactivate_plugins',
+		'deactivate_plugin',
+		'update_plugins',
+		'delete_plugins',
+		'edit_plugins',
+		'upload_plugins',
+		'resume_plugin',
+		'switch_themes',
+		'install_themes',
+		'update_themes',
+		'delete_themes',
+		'edit_themes',
+		'upload_themes',
+		'resume_theme',
+		// Core, files and languages.
+		'update_core',
+		'update_php',
+		'update_https',
+		'update_languages',
+		'install_languages',
+		'edit_files',
+		'unfiltered_html',
+		'unfiltered_upload',
+		'import',
+		'export',
+		'export_others_personal_data',
+		'erase_others_personal_data',
+		'delete_site',
+		// Users.
+		'create_users',
+		'add_users',
+		'edit_users',
+		'edit_user',
+		'delete_users',
+		'delete_user',
+		'remove_users',
+		'remove_user',
+		'promote_users',
+		'promote_user',
+		// Multisite network.
+		'manage_network',
+		'manage_sites',
+		'manage_network_users',
+		'manage_network_plugins',
+		'manage_network_themes',
+		'manage_network_options',
+		'create_sites',
+		'delete_sites',
+		'upgrade_network',
+		'setup_network',
+	);
+
+	/**
+	 * User ID of the AI connection for the current request.
+	 *
+	 * @var int
+	 */
+	private static $guarded_user = 0;
+
+	/**
+	 * Applies the capability guard to the user an AI connection acts as, for
+	 * the rest of the current request.
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public static function guard_connection_user( $user_id ) {
+		self::$guarded_user = (int) $user_id;
+		// map_meta_cap also applies to super admins, unlike user_has_cap.
+		add_filter( 'map_meta_cap', array( self::class, 'block_admin_caps' ), PHP_INT_MAX, 4 );
+		// Content filtering was set up when the user was set; redo it without unfiltered_html.
+		kses_init();
+	}
+
+	/**
+	 * Denies administrative capabilities to the guarded user.
+	 *
+	 * @param string[] $caps    Primitive capabilities required.
+	 * @param string   $cap     Capability being checked.
+	 * @param int      $user_id User ID.
+	 * @return string[]
+	 */
+	public static function block_admin_caps( $caps, $cap, $user_id ) {
+		if ( self::$guarded_user && (int) $user_id === self::$guarded_user && array_intersect( array_merge( array( $cap ), (array) $caps ), self::BLOCKED_CAPS ) ) {
+			return array( 'do_not_allow' );
+		}
+		return $caps;
+	}
+
+	/**
 	 * Access levels, lowest first.
 	 *
 	 * @return array<string,int>
@@ -56,7 +155,7 @@ class Policy {
 		return array(
 			self::READ    => __( 'Read only', 'viagent' ),
 			self::CONTENT => __( 'Content editor', 'viagent' ),
-			self::ADMIN   => __( 'Full control', 'viagent' ),
+			self::ADMIN   => __( 'Site manager', 'viagent' ),
 		);
 	}
 

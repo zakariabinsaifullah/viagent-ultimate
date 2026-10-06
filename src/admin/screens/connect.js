@@ -56,9 +56,9 @@ const ACCESS = [
 	},
 	{
 		id: 'admin',
-		title: __( 'Full control', 'viagent' ),
+		title: __( 'Site manager', 'viagent' ),
 		description: __(
-			'Everything above plus site settings and menus, and a read-only view of plugins, themes and users.',
+			'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.',
 			'viagent'
 		),
 		example: __( '“Set my Contact page as the homepage”', 'viagent' ),

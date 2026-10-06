@@ -573,8 +573,8 @@ class OAuth {
 			$options['admin'] = array(
 				'level'       => Policy::ADMIN,
 				'draft_only'  => false,
-				'label'       => __( 'Full control', 'viagent' ),
-				'description' => __( 'Everything above plus site settings and menus, and a read-only view of plugins, themes and users.', 'viagent' ),
+				'label'       => __( 'Site manager', 'viagent' ),
+				'description' => __( 'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.', 'viagent' ),
 			);
 		}
 		return $options;

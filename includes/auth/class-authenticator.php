@@ -67,6 +67,7 @@ class Authenticator {
 		}
 
 		wp_set_current_user( $connection->user_id );
+		Policy::guard_connection_user( $connection->user_id );
 		self::$current = $connection;
 
 		return $connection;

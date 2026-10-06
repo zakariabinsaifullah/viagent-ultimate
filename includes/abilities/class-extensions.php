@@ -28,7 +28,7 @@ class Extensions {
 				'label'       => __( 'List plugins', 'viagent' ),
 				'description' => __( 'Lists installed plugins with version, active state and whether an update is available.', 'viagent' ),
 				'execute'     => array( self::class, 'list_plugins' ),
-				'permission'  => 'activate_plugins',
+				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
 			)
 		);
@@ -40,7 +40,7 @@ class Extensions {
 				'label'       => __( 'List themes', 'viagent' ),
 				'description' => __( 'Lists installed themes and which one is active.', 'viagent' ),
 				'execute'     => array( self::class, 'list_themes' ),
-				'permission'  => 'switch_themes',
+				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
 			)
 		);

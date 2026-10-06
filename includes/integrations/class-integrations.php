@@ -40,12 +40,6 @@ class Integrations {
 					return ! empty( Forms::providers() );
 				},
 			),
-			'network'     => array(
-				'class'  => Network::class,
-				'active' => static function () {
-					return is_multisite();
-				},
-			),
 			'acf'         => array(
 				'class'  => ACF::class,
 				'active' => static function () {
@@ -70,8 +64,6 @@ class Integrations {
 				return __( 'SEO (Yoast SEO or Rank Math)', 'viagent' );
 			case 'forms':
 				return __( 'Forms (Contact Form 7, WPForms, Gravity Forms)', 'viagent' );
-			case 'network':
-				return __( 'Multisite network', 'viagent' );
 			case 'acf':
 				return __( 'Advanced Custom Fields', 'viagent' );
 		}

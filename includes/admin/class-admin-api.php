@@ -589,7 +589,6 @@ class Admin_API {
 			'list_plugins'           => __( 'See installed plugins.', 'viagent' ),
 			'list_themes'            => __( 'See installed themes.', 'viagent' ),
 			'get_site_health'        => __( 'Check versions, updates and technical health.', 'viagent' ),
-			'get_error_log'          => __( 'Read the PHP error log to help fix problems.', 'viagent' ),
 		);
 
 		/**
