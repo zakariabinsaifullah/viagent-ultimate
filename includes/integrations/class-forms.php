@@ -2,7 +2,7 @@
 /**
  * Form tools for Contact Form 7 (with Flamingo for entries), WPForms and
  * Gravity Forms: list forms with embed codes, read their fields, and read
- * submitted entries. Entries contain personal data, so they need the Site manager level.
+ * submitted entries. Entries contain personal data, so they need the Full control level.
  *
  * @package ViagentProduction
  */
@@ -164,8 +164,33 @@ class Forms {
 	 * @return array|WP_Error
 	 */
 	public static function get_form( $input ) {
-		$form = call_user_func( array( self::class, $input['provider'] . '_form' ), (int) $input['form_id'] );
-		return is_wp_error( $form ) ? $form : array_merge( array( 'provider' => $input['provider'] ), $form );
+		$provider = self::provider( $input );
+		if ( is_wp_error( $provider ) ) {
+			return $provider;
+		}
+		$form = call_user_func( array( self::class, $provider . '_form' ), (int) $input['form_id'] );
+		return is_wp_error( $form ) ? $form : array_merge( array( 'provider' => $provider ), $form );
+	}
+
+	/**
+	 * Resolves the provider slug from the input, allowing only active form plugins.
+	 *
+	 * @param array $input Input.
+	 * @return string|WP_Error
+	 */
+	private static function provider( $input ) {
+		$provider = (string) ( $input['provider'] ?? '' );
+		if ( ! isset( self::providers()[ $provider ] ) ) {
+			return new WP_Error(
+				'viagent_production_unknown_provider',
+				sprintf(
+					/* translators: %s: available provider slugs */
+					__( 'Unknown form plugin. Use one of: %s (as returned by list_forms).', 'viagent-production' ),
+					implode( ', ', array_keys( self::providers() ) )
+				)
+			);
+		}
+		return $provider;
 	}
 
 	/**
@@ -175,9 +200,13 @@ class Forms {
 	 * @return array|WP_Error
 	 */
 	public static function list_entries( $input ) {
+		$provider = self::provider( $input );
+		if ( is_wp_error( $provider ) ) {
+			return $provider;
+		}
 		$per_page = (int) ( $input['per_page'] ?? 20 );
 		return call_user_func(
-			array( self::class, $input['provider'] . '_entries' ),
+			array( self::class, $provider . '_entries' ),
 			(int) $input['form_id'],
 			(string) ( $input['search'] ?? '' ),
 			$per_page,

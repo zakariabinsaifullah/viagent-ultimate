@@ -22,17 +22,20 @@ class Abilities {
 	public static function register_categories() {
 		$categories = array(
 			'viagent-production-site'        => array( __( 'Site', 'viagent-production' ), __( 'Site information and search.', 'viagent-production' ) ),
-			'viagent-production-content'     => array( __( 'Content', 'viagent-production' ), __( 'Posts, pages and custom post types.', 'viagent-production' ) ),
+			'viagent-production-content'     => array( __( 'Content', 'viagent-production' ), __( 'Posts, pages, custom post types, custom fields and new content types.', 'viagent-production' ) ),
 			'viagent-production-blocks'      => array( __( 'Blocks & patterns', 'viagent-production' ), __( 'Block types and patterns for building layouts.', 'viagent-production' ) ),
 			'viagent-production-taxonomies'  => array( __( 'Categories & tags', 'viagent-production' ), __( 'Categories, tags and custom taxonomies.', 'viagent-production' ) ),
 			'viagent-production-media'       => array( __( 'Media', 'viagent-production' ), __( 'Images, documents and other uploads.', 'viagent-production' ) ),
 			'viagent-production-comments'    => array( __( 'Comments', 'viagent-production' ), __( 'Reading, replying to and moderating comments.', 'viagent-production' ) ),
-			'viagent-production-users'       => array( __( 'Users', 'viagent-production' ), __( 'User accounts and profiles (read only).', 'viagent-production' ) ),
+			'viagent-production-users'       => array( __( 'Users', 'viagent-production' ), __( 'User accounts, roles and profiles.', 'viagent-production' ) ),
 			'viagent-production-menus'       => array( __( 'Menus', 'viagent-production' ), __( 'Navigation menus.', 'viagent-production' ) ),
 			'viagent-production-settings'    => array( __( 'Settings', 'viagent-production' ), __( 'General, reading and discussion settings.', 'viagent-production' ) ),
-			'viagent-production-extensions'  => array( __( 'Plugins & themes', 'viagent-production' ), __( 'Installed plugins and themes (read only).', 'viagent-production' ) ),
+			'viagent-production-extensions'  => array( __( 'Plugins & themes', 'viagent-production' ), __( 'Install, activate, update and delete plugins and themes.', 'viagent-production' ) ),
+			'viagent-production-files'       => array( __( 'Theme & plugin files', 'viagent-production' ), __( 'Read and edit theme and plugin code.', 'viagent-production' ) ),
 			'viagent-production-diagnostics' => array( __( 'Diagnostics', 'viagent-production' ), __( 'Site health overview.', 'viagent-production' ) ),
 		);
+
+		$categories['viagent-production-site-editor'] = array( __( 'Site editor', 'viagent-production' ), __( 'Block theme templates, template parts and global styles.', 'viagent-production' ) );
 
 		foreach ( $categories as $slug => $data ) {
 			wp_register_ability_category(
@@ -59,6 +62,9 @@ class Abilities {
 		Menus::register();
 		Settings::register();
 		Extensions::register();
+		Content_Types::register();
+		Site_Editor::register();
+		Files::register();
 		Meta::register();
 		Diagnostics::register();
 	}
@@ -125,12 +131,12 @@ class Abilities {
 	 */
 	public static function read_meta( $level = Policy::READ ) {
 		return array(
-			'annotations' => array(
+			'annotations'        => array(
 				'readonly'    => true,
 				'destructive' => false,
 				'idempotent'  => true,
 			),
-			'viagent_production'     => array( 'level' => $level ),
+			'viagent_production' => array( 'level' => $level ),
 		);
 	}
 
@@ -150,12 +156,12 @@ class Abilities {
 	 */
 	public static function write_meta( $level = Policy::CONTENT, array $flags = array() ) {
 		return array(
-			'annotations' => array(
+			'annotations'        => array(
 				'readonly'    => false,
 				'destructive' => ! empty( $flags['destructive'] ),
 				'idempotent'  => ! empty( $flags['idempotent'] ),
 			),
-			'viagent_production'     => array(
+			'viagent_production' => array(
 				'level'           => $level,
 				'draft_safe'      => ! empty( $flags['draft_safe'] ),
 				'default_enabled' => $flags['default_enabled'] ?? true,

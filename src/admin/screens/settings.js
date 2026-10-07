@@ -233,7 +233,10 @@ export default function Settings( { state, onStateChange } ) {
 					<CardBody className="viagent-production-settings__toggles">
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={ __( 'Pause all AI access', 'viagent-production' ) }
+							label={ __(
+								'Pause all AI access',
+								'viagent-production'
+							) }
 							help={ __(
 								'Instantly blocks every connected app. Turn it off to resume — connections are kept.',
 								'viagent-production'
@@ -267,6 +270,35 @@ export default function Settings( { state, onStateChange } ) {
 								<p className="viagent-production-danger-toggle__warning">
 									{ __(
 										'Permanent deletion is on. AI apps with delete access can remove things that cannot be undone.',
+										'viagent-production'
+									) }
+								</p>
+							) }
+						</div>
+						<div
+							className={ `viagent-production-danger-toggle ${
+								state?.allow_code ? 'is-on' : ''
+							}` }
+						>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={ __(
+									'Allow AI apps to change code',
+									'viagent-production'
+								) }
+								help={ __(
+									'Off (recommended): apps with Full control can read theme and plugin code and install from WordPress.org, but cannot write or delete files or install from a .zip link. On: they can edit theme and plugin code, build child themes and plugins, and install any .zip — code they write runs on your server with no safety checks.',
+									'viagent-production'
+								) }
+								checked={ Boolean( state?.allow_code ) }
+								onChange={ ( value ) =>
+									save( { allow_code: value } )
+								}
+							/>
+							{ state?.allow_code && (
+								<p className="viagent-production-danger-toggle__warning">
+									{ __(
+										'Code changes are on. An AI with Full control can run any code on this site, which also lets it work around every other safety setting. Turn this off when you are done.',
 										'viagent-production'
 									) }
 								</p>
@@ -315,7 +347,9 @@ export default function Settings( { state, onStateChange } ) {
 
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Connection details', 'viagent-production' ) }</h3>
+						<h3>
+							{ __( 'Connection details', 'viagent-production' ) }
+						</h3>
 					</CardHeader>
 					<CardBody>
 						<CopyField
@@ -351,11 +385,17 @@ export default function Settings( { state, onStateChange } ) {
 									<span>{ item.name }</span>
 									{ item.active ? (
 										<Badge tone="success">
-											{ __( 'Active', 'viagent-production' ) }
+											{ __(
+												'Active',
+												'viagent-production'
+											) }
 										</Badge>
 									) : (
 										<Badge>
-											{ __( 'Not active', 'viagent-production' ) }
+											{ __(
+												'Not active',
+												'viagent-production'
+											) }
 										</Badge>
 									) }
 								</li>

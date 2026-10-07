@@ -2,7 +2,7 @@
 /**
  * Access levels and safety rules: draft-only mode, permanent deletes,
  * per-tool switches, rate limits, the kill switch, and the capability guard
- * that keeps AI connections away from site administration.
+ * that keeps AI connections away from WordPress core and network administration.
  *
  * @package ViagentProduction
  */
@@ -28,6 +28,7 @@ class Policy {
 
 	const PAUSED_OPTION           = 'viagent_production_paused';
 	const PERMANENT_DELETE_OPTION = 'viagent_production_allow_permanent_delete';
+	const CODE_OPTION             = 'viagent_production_allow_code';
 	const TOOL_OVERRIDES_OPTION   = 'viagent_production_tool_overrides';
 
 	/**
@@ -37,29 +38,13 @@ class Policy {
 
 	/**
 	 * Capabilities an AI connection can never use, whatever the connected
-	 * user's role (administrators and super admins included). Site
-	 * administration stays with people in the WordPress dashboard.
+	 * user's role (administrators and super admins included). Plugins, themes,
+	 * their files and users are open to AI connections at the Full control
+	 * level; WordPress core, import/export, privacy tools and the multisite
+	 * network stay with people in the WordPress dashboard.
 	 */
 	const BLOCKED_CAPS = array(
-		// Plugins and themes.
-		'install_plugins',
-		'activate_plugins',
-		'activate_plugin',
-		'deactivate_plugins',
-		'deactivate_plugin',
-		'update_plugins',
-		'delete_plugins',
-		'edit_plugins',
-		'upload_plugins',
-		'resume_plugin',
-		'switch_themes',
-		'install_themes',
-		'update_themes',
-		'delete_themes',
-		'edit_themes',
-		'upload_themes',
-		'resume_theme',
-		// Core, files and languages.
+		// Core, languages and generic file access.
 		'update_core',
 		'update_php',
 		'update_https',
@@ -73,17 +58,6 @@ class Policy {
 		'export_others_personal_data',
 		'erase_others_personal_data',
 		'delete_site',
-		// Users.
-		'create_users',
-		'add_users',
-		'edit_users',
-		'edit_user',
-		'delete_users',
-		'delete_user',
-		'remove_users',
-		'remove_user',
-		'promote_users',
-		'promote_user',
 		// Multisite network.
 		'manage_network',
 		'manage_sites',
@@ -99,9 +73,11 @@ class Policy {
 
 	/**
 	 * Options an AI connection can never change, even through another
-	 * plugin's ability: site address, admin email, registration and roles,
-	 * active plugins and theme, and search engine visibility. Viagent Production's own
-	 * options and every user's roles are protected too.
+	 * plugin's ability: site address, admin email, user registration,
+	 * search engine visibility and permalinks. The role definitions
+	 * ({prefix}user_roles) and Viagent Production's own options are protected
+	 * too, so an AI can never unpause itself, switch its own tools on or give
+	 * a role new capabilities (see is_protected_option()).
 	 */
 	const PROTECTED_OPTIONS = array(
 		'siteurl',
@@ -110,18 +86,19 @@ class Policy {
 		'new_admin_email',
 		'users_can_register',
 		'default_role',
-		'active_plugins',
-		'recently_activated',
-		'uninstall_plugins',
-		'template',
-		'stylesheet',
-		'current_theme',
 		'blog_public',
 		'permalink_structure',
 		'upload_path',
 		'upload_url_path',
 		'WPLANG',
 	);
+
+	/**
+	 * Viagent Production options an AI connection may change (managed by its
+	 * SEO and content type tools). All other viagent_production_* options are
+	 * the site owner's alone.
+	 */
+	const AI_WRITABLE_OPTION_PREFIXES = array( 'viagent_production_seo_', 'viagent_production_content_types' );
 
 	/**
 	 * User ID of the AI connection for the current request.
@@ -141,9 +118,10 @@ class Policy {
 		// map_meta_cap also applies to super admins, unlike user_has_cap.
 		add_filter( 'map_meta_cap', array( self::class, 'block_admin_caps' ), PHP_INT_MAX, 4 );
 		add_filter( 'pre_update_option', array( self::class, 'block_protected_option' ), PHP_INT_MAX, 3 );
-		add_filter( 'update_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
-		add_filter( 'add_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
-		add_filter( 'delete_user_metadata', array( self::class, 'block_role_meta' ), PHP_INT_MAX, 3 );
+		// update_option() is covered above; add_option()/delete_option() have no veto filter, so undo them.
+		add_action( 'added_option', array( self::class, 'undo_protected_option_add' ), PHP_INT_MAX, 1 );
+		add_action( 'delete_option', array( self::class, 'remember_protected_option' ), PHP_INT_MAX, 1 );
+		add_action( 'deleted_option', array( self::class, 'undo_protected_option_delete' ), PHP_INT_MAX, 1 );
 		// Content filtering was set up when the user was set; redo it without unfiltered_html.
 		kses_init();
 	}
@@ -172,29 +150,108 @@ class Policy {
 	 * @return mixed
 	 */
 	public static function block_protected_option( $value, $option, $old_value ) {
-		global $wpdb;
-		// Viagent Production's own options (pause switch, tool switches…) are the site owner's alone.
-		if ( in_array( $option, self::PROTECTED_OPTIONS, true ) || 0 === strpos( $option, 'viagent_production_' ) || $wpdb->get_blog_prefix() . 'user_roles' === $option ) {
+		// Making the site visible to search engines is allowed; hiding it is not.
+		if ( 'blog_public' === $option && '1' === (string) $value ) {
+			return $value;
+		}
+		if ( self::is_protected_option( $option ) ) {
 			return $old_value;
 		}
 		return $value;
 	}
 
 	/**
-	 * Refuses changes to any user's roles, capabilities or user level during AI requests.
+	 * Whether an option may never be changed during an AI request: the
+	 * critical site options, the role definitions, and Viagent Production's
+	 * own options (pause switch, tool switches…) except the ones its SEO and
+	 * content type tools manage.
 	 *
-	 * @param null|bool $check    Short-circuit value.
-	 * @param int       $user_id  User ID.
-	 * @param string    $meta_key Meta key.
-	 * @return null|bool
+	 * @param string $option Option name.
+	 * @return bool
 	 */
-	public static function block_role_meta( $check, $user_id, $meta_key ) {
+	public static function is_protected_option( $option ) {
 		global $wpdb;
-		$prefix = $wpdb->get_blog_prefix();
-		if ( in_array( $meta_key, array( $prefix . 'capabilities', $prefix . 'user_level' ), true ) ) {
-			return false;
+		if ( in_array( $option, self::PROTECTED_OPTIONS, true ) || $wpdb->get_blog_prefix() . 'user_roles' === $option ) {
+			return true;
 		}
-		return $check;
+		return 0 === strpos( $option, 'viagent_production_' ) && ! self::is_ai_writable_option( $option );
+	}
+
+	/**
+	 * Values of protected options about to be deleted, keyed by option name.
+	 *
+	 * @var array<string,mixed>
+	 */
+	private static $deleting_options = array();
+
+	/**
+	 * Removes a protected option that was added (not updated) during an AI request.
+	 *
+	 * @param string $option Option name.
+	 */
+	public static function undo_protected_option_add( $option ) {
+		if ( self::is_protected_option( $option ) ) {
+			remove_action( 'delete_option', array( self::class, 'remember_protected_option' ), PHP_INT_MAX );
+			remove_action( 'deleted_option', array( self::class, 'undo_protected_option_delete' ), PHP_INT_MAX );
+			delete_option( $option );
+			add_action( 'delete_option', array( self::class, 'remember_protected_option' ), PHP_INT_MAX, 1 );
+			add_action( 'deleted_option', array( self::class, 'undo_protected_option_delete' ), PHP_INT_MAX, 1 );
+		}
+	}
+
+	/**
+	 * Remembers a protected option's value right before it is deleted.
+	 *
+	 * @param string $option Option name.
+	 */
+	public static function remember_protected_option( $option ) {
+		if ( self::is_protected_option( $option ) ) {
+			$value = get_option( $option, null );
+			if ( null !== $value ) {
+				self::$deleting_options[ $option ] = $value;
+			}
+		}
+	}
+
+	/**
+	 * Puts a protected option back after it was deleted during an AI request.
+	 *
+	 * @param string $option Option name.
+	 */
+	public static function undo_protected_option_delete( $option ) {
+		if ( array_key_exists( $option, self::$deleting_options ) ) {
+			$value = self::$deleting_options[ $option ];
+			unset( self::$deleting_options[ $option ] );
+			remove_action( 'added_option', array( self::class, 'undo_protected_option_add' ), PHP_INT_MAX );
+			add_option( $option, $value );
+			add_action( 'added_option', array( self::class, 'undo_protected_option_add' ), PHP_INT_MAX, 1 );
+		}
+	}
+
+	/**
+	 * Whether an AI connection may change one of Viagent Production's own options.
+	 *
+	 * @param string $option Option name.
+	 * @return bool
+	 */
+	public static function is_ai_writable_option( $option ) {
+		foreach ( self::AI_WRITABLE_OPTION_PREFIXES as $prefix ) {
+			if ( 0 === strpos( $option, $prefix ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Whether the current AI connection has the Full control level. Outside
+	 * an AI request (e.g. the dashboard or WP-CLI) this is false.
+	 *
+	 * @return bool
+	 */
+	public static function is_full_control() {
+		$connection = Authenticator::current();
+		return $connection && self::ADMIN === $connection->access_level;
 	}
 
 	/**
@@ -219,7 +276,7 @@ class Policy {
 		return array(
 			self::READ    => __( 'Read only', 'viagent-production' ),
 			self::CONTENT => __( 'Content editor', 'viagent-production' ),
-			self::ADMIN   => __( 'Site manager', 'viagent-production' ),
+			self::ADMIN   => __( 'Full control', 'viagent-production' ),
 		);
 	}
 
@@ -264,6 +321,31 @@ class Policy {
 	 */
 	public static function allows_permanent_delete() {
 		return (bool) get_option( self::PERMANENT_DELETE_OPTION, false );
+	}
+
+	/**
+	 * Whether the site owner lets AI connections change code: write or delete
+	 * plugin and theme files, and install plugins or themes from a .zip link.
+	 * Off by default, because code the AI writes runs on the server with no
+	 * guard at all. Installing from WordPress.org and reading code are always
+	 * allowed at the Full control level.
+	 *
+	 * @return bool
+	 */
+	public static function allows_code() {
+		return (bool) get_option( self::CODE_OPTION, false );
+	}
+
+	/**
+	 * Error returned by code-changing tools while the switch is off.
+	 *
+	 * @return WP_Error
+	 */
+	public static function code_disabled_error() {
+		return new WP_Error(
+			'viagent_production_code_disabled',
+			__( 'Changing code is switched off for AI apps on this site. Ask the site owner to turn on "Allow AI apps to change code" in WordPress → Tools → Viagent Production → Settings, then try again.', 'viagent-production' )
+		);
 	}
 
 	/**

@@ -22,7 +22,7 @@ global $wpdb;
 function viagent_production_uninstall_site() {
 	global $wpdb;
 
-	foreach ( array( 'keys', 'activity', 'oauth_clients', 'oauth_tokens' ) as $viagent_production_table ) {
+	foreach ( array( 'keys', 'activity', 'oauth_clients', 'oauth_tokens', 'seo_redirects', 'seo_404' ) as $viagent_production_table ) {
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'viagent_production_' . $viagent_production_table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange -- removing the plugin's own tables on uninstall.
 	}
 
@@ -30,11 +30,15 @@ function viagent_production_uninstall_site() {
 		'viagent_production_db_version',
 		'viagent_production_paused',
 		'viagent_production_allow_permanent_delete',
+		'viagent_production_allow_code',
 		'viagent_production_tool_overrides',
 		'viagent_production_prompt_overrides',
 		'viagent_production_compact_mode',
 		'viagent_production_activation_redirect',
 		'viagent_production_delete_data_on_uninstall',
+		'viagent_production_seo_settings',
+		'viagent_production_seo_robots_txt',
+		'viagent_production_seo_indexnow_key',
 	);
 	foreach ( $viagent_production_options as $viagent_production_option ) {
 		delete_option( $viagent_production_option );

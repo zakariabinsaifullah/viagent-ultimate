@@ -16,13 +16,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Installer {
 
-	const DB_VERSION        = '7';
+	const DB_VERSION        = '8';
 	const DB_VERSION_OPTION = 'viagent_production_db_version';
 
 	/**
 	 * Table short names.
 	 */
-	const TABLES = array( 'keys', 'activity', 'oauth_clients', 'oauth_tokens' );
+	const TABLES = array( 'keys', 'activity', 'oauth_clients', 'oauth_tokens', 'seo_redirects', 'seo_404' );
 
 	/**
 	 * Activation hook. On a network activation every site gets its tables.
@@ -119,6 +119,8 @@ class Installer {
 		$activity = self::table( 'activity' );
 		$clients  = self::table( 'oauth_clients' );
 		$tokens   = self::table( 'oauth_tokens' );
+		$redirect = self::table( 'seo_redirects' );
+		$missing  = self::table( 'seo_404' );
 
 		dbDelta(
 			"CREATE TABLE {$keys} (
@@ -176,6 +178,38 @@ class Installer {
 				last_used_at datetime DEFAULT NULL,
 				PRIMARY KEY  (id),
 				UNIQUE KEY client_id (client_id)
+			) {$charset};"
+		);
+
+		dbDelta(
+			"CREATE TABLE {$redirect} (
+				id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+				source varchar(255) NOT NULL,
+				target text NOT NULL,
+				type smallint(3) unsigned NOT NULL DEFAULT 301,
+				match_type varchar(10) NOT NULL DEFAULT 'exact',
+				hits bigint(20) unsigned NOT NULL DEFAULT 0,
+				last_hit_at datetime DEFAULT NULL,
+				note varchar(255) NOT NULL DEFAULT '',
+				created_at datetime NOT NULL,
+				PRIMARY KEY  (id),
+				KEY source (source(190)),
+				KEY match_type (match_type)
+			) {$charset};"
+		);
+
+		dbDelta(
+			"CREATE TABLE {$missing} (
+				id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+				path varchar(190) NOT NULL,
+				hits bigint(20) unsigned NOT NULL DEFAULT 0,
+				referrer varchar(255) NOT NULL DEFAULT '',
+				user_agent varchar(255) NOT NULL DEFAULT '',
+				first_seen datetime NOT NULL,
+				last_seen datetime NOT NULL,
+				PRIMARY KEY  (id),
+				UNIQUE KEY path (path),
+				KEY last_seen (last_seen)
 			) {$charset};"
 		);
 

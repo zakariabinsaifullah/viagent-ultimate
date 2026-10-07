@@ -43,12 +43,24 @@ class Authorize {
 	 */
 	private static function params() {
 		$params = array();
+		// Query string for the authorization request, form fields for the consent POST — never cookies.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- OAuth values must stay byte-exact; each is validated strictly in validate(), and the POST is nonce-checked in handle().
+		$source = self::is_post() ? $_POST : $_GET;
 		foreach ( self::PARAMS as $name ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- OAuth values must stay byte-exact; each is validated strictly in validate(), and the POST is nonce-checked in handle().
-			$value           = isset( $_REQUEST[ $name ] ) ? wp_unslash( $_REQUEST[ $name ] ) : '';
+			$value           = isset( $source[ $name ] ) ? wp_unslash( $source[ $name ] ) : '';
 			$params[ $name ] = is_string( $value ) ? trim( $value ) : '';
 		}
+		// phpcs:enable
 		return $params;
+	}
+
+	/**
+	 * Whether the consent form was submitted.
+	 *
+	 * @return bool
+	 */
+	private static function is_post() {
+		return isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) );
 	}
 
 	/**
@@ -101,7 +113,16 @@ class Authorize {
 	 */
 	public static function handle() {
 		$params = self::params();
-		$valid  = self::validate( $params );
+
+		// Sign in first: validating the client may fetch its metadata document
+		// from the client_id URL, which anonymous visitors must not be able to trigger.
+		if ( ! is_user_logged_in() ) {
+			$authorize_url = add_query_arg( array_map( 'rawurlencode', array_filter( $params, 'strlen' ) ), OAuth::authorization_endpoint() );
+			wp_safe_redirect( wp_login_url( $authorize_url ) );
+			exit;
+		}
+
+		$valid = self::validate( $params );
 
 		if ( is_wp_error( $valid ) ) {
 			$data = $valid->get_error_data();
@@ -118,18 +139,11 @@ class Authorize {
 			self::render_error( $valid->get_error_message() );
 		}
 
-		$authorize_url = add_query_arg( array_map( 'rawurlencode', array_filter( $params, 'strlen' ) ), OAuth::authorization_endpoint() );
-
-		if ( ! is_user_logged_in() ) {
-			wp_safe_redirect( wp_login_url( $authorize_url ) );
-			exit;
-		}
-
 		if ( Policy::is_paused() ) {
 			self::render_error( __( 'AI access to this site is paused. Resume it in Viagent Production → Settings, then try again.', 'viagent-production' ) );
 		}
 
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) {
+		if ( self::is_post() ) {
 			check_admin_referer( self::NONCE );
 			self::decide( $params );
 		}
@@ -249,7 +263,7 @@ class Authorize {
 			</fieldset>
 
 			<p class="viagent-production-consent__note">
-				<?php esc_html_e( 'The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent Production.', 'viagent-production' ); ?>
+				<?php esc_html_e( 'The app works on your site as you. With Full control it can also install and change plugins, themes, their code and user accounts. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent Production.', 'viagent-production' ); ?>
 			</p>
 
 			<?php foreach ( $params as $name => $value ) : ?>

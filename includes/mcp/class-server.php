@@ -135,9 +135,10 @@ class Server {
 			sprintf( 'You are connected to the WordPress site "%s" (%s).', get_bloginfo( 'name' ), home_url( '/' ) ),
 			sprintf( 'You act as the user "%s" with the access level "%s".', $user->user_login, $labels[ $this->connection->access_level ] ?? $this->connection->access_level ),
 			'Call get_site_info first to learn about the site, its post types and theme.',
-			'Write post content as WordPress block markup (<!-- wp:paragraph --> etc.) so it stays editable in the block editor.',
+			'Send content as block markup, HTML or Markdown: HTML and Markdown are converted to core blocks. To change part of a long page, use get_post_blocks + edit_post_blocks or replace_in_post instead of resending everything. Check content_warnings in responses.',
 			'Deleting moves items to the trash; tell the user what you changed and include links.',
 			'Every change is logged, and the site owner can undo it from WordPress → Viagent Production → Activity.',
+			'Before installing, deleting or switching plugins and themes, or editing their code, say what you are about to do. Read a file before writing it, and prefer a child theme over editing a theme that receives updates.',
 		);
 		if ( $this->connection->compact ) {
 			$lines[2] = 'Tools are grouped: call discover_tools to list them, describe_tool for a tool\'s inputs, and run_tool to use it. Start with run_tool name "get_site_info".';
@@ -150,6 +151,9 @@ class Server {
 		$lines = apply_filters( 'viagent_production_instructions', $lines );
 		if ( $this->connection->draft_only ) {
 			$lines[] = 'Draft-only mode is ON: create and edit drafts only; you cannot publish, schedule or delete. Ask the user to publish from WordPress.';
+		}
+		if ( Policy::ADMIN === $this->connection->access_level && ! Policy::allows_code() ) {
+			$lines[] = 'Changing code is OFF: you can read theme and plugin files and install from WordPress.org, but write_extension_file, delete_extension_file and .zip installs are refused until the site owner turns on "Allow AI apps to change code" in Viagent Production → Settings.';
 		}
 		return implode( "\n", $lines );
 	}

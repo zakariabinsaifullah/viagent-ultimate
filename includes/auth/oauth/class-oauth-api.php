@@ -229,7 +229,8 @@ class OAuth_API {
 		$grant_type = (string) $request->get_param( 'grant_type' );
 		$client_id  = (string) $request->get_param( 'client_id' );
 
-		if ( ! OAuth::get_client( $client_id ) ) {
+		// Database only: this endpoint is public, so it must never make the site fetch a client's metadata URL.
+		if ( ! OAuth::find_client( $client_id ) ) {
 			return self::error( 'invalid_client', 'Unknown client_id.', 401 );
 		}
 

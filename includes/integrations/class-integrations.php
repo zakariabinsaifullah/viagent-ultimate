@@ -29,10 +29,8 @@ class Integrations {
 				},
 			),
 			'seo'         => array(
-				'class'  => SEO::class,
-				'active' => static function () {
-					return null !== SEO::provider();
-				},
+				'class'  => \ViagentProduction\SEO\SEO::class,
+				'active' => '__return_true',
 			),
 			'forms'       => array(
 				'class'  => Forms::class,
@@ -61,7 +59,7 @@ class Integrations {
 			case 'woocommerce':
 				return 'WooCommerce';
 			case 'seo':
-				return __( 'SEO (Yoast SEO or Rank Math)', 'viagent-production' );
+				return __( 'SEO (built in; works with Yoast SEO, Rank Math, All in One SEO, SEOPress and The SEO Framework)', 'viagent-production' );
 			case 'forms':
 				return __( 'Forms (Contact Form 7, WPForms, Gravity Forms)', 'viagent-production' );
 			case 'acf':

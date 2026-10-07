@@ -265,9 +265,22 @@ class Media {
 
 		self::load_admin_includes();
 
+		// Never download more than the site's upload limit.
+		$max_size = (int) wp_max_upload_size();
+		$cap_size = static function ( $args ) use ( $max_size ) {
+			$args['limit_response_size'] = $max_size;
+			return $args;
+		};
+		add_filter( 'http_request_args', $cap_size, PHP_INT_MAX );
 		$tmp = download_url( $url, 60 );
+		remove_filter( 'http_request_args', $cap_size, PHP_INT_MAX );
 		if ( is_wp_error( $tmp ) ) {
 			return $tmp;
+		}
+		if ( filesize( $tmp ) > $max_size ) {
+			wp_delete_file( $tmp );
+			/* translators: %s: maximum upload size, e.g. "8 MB" */
+			return new WP_Error( 'viagent_production_too_large', sprintf( __( 'The file is larger than this site allows for uploads (%s).', 'viagent-production' ), size_format( $max_size ) ) );
 		}
 
 		$filename = $input['filename'] ?? '';
@@ -321,6 +334,22 @@ class Media {
 			return new WP_Error( 'viagent_production_invalid_type', __( 'This file type is not allowed. Use an image, PDF, audio, video or another allowed type, with a matching file extension.', 'viagent-production' ) );
 		}
 
+		// Attaching to a post needs the right to edit that post.
+		$parent = (int) ( $input['attach_to'] ?? 0 );
+		if ( $parent ) {
+			$post = Content::find( $parent );
+			if ( ! is_wp_error( $post ) && ! current_user_can( 'edit_post', $post->ID ) ) {
+				$post = new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to attach files to that post.', 'viagent-production' ) );
+			}
+			if ( ! is_wp_error( $post ) ) {
+				$post = Policy::check_post_editable( $post );
+			}
+			if ( is_wp_error( $post ) ) {
+				wp_delete_file( $tmp );
+				return $post;
+			}
+		}
+
 		$post_data = array();
 		if ( isset( $input['title'] ) ) {
 			$post_data['post_title'] = $input['title'];
@@ -337,7 +366,7 @@ class Media {
 				'name'     => $filename,
 				'tmp_name' => $tmp,
 			),
-			(int) ( $input['attach_to'] ?? 0 ),
+			$parent,
 			null,
 			wp_slash( $post_data )
 		);

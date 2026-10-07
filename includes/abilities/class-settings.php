@@ -161,6 +161,9 @@ class Settings {
 		if ( isset( $changes['timezone_string'] ) && ! in_array( $changes['timezone_string'], timezone_identifiers_list(), true ) ) {
 			return new WP_Error( 'viagent_production_invalid_timezone', __( 'Unknown timezone. Use a name like "America/New_York".', 'viagent-production' ) );
 		}
+		if ( ! empty( $changes['site_icon'] ) && ! wp_attachment_is_image( (int) $changes['site_icon'] ) ) {
+			return new WP_Error( 'viagent_production_invalid_site_icon', __( 'site_icon must be the ID of an image in the media library.', 'viagent-production' ) );
+		}
 
 		$previous = array();
 		foreach ( $changes as $name => $value ) {

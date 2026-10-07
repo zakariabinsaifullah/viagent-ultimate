@@ -59,6 +59,7 @@ class Admin_API {
 				'args'                => array(
 					'paused'                 => array( 'type' => 'boolean' ),
 					'allow_permanent_delete' => array( 'type' => 'boolean' ),
+					'allow_code'             => array( 'type' => 'boolean' ),
 					'compact_mode'           => array( 'type' => 'boolean' ),
 					'delete_data'            => array( 'type' => 'boolean' ),
 				),
@@ -258,6 +259,7 @@ class Admin_API {
 		return array(
 			'paused'                 => Policy::is_paused(),
 			'allow_permanent_delete' => Policy::allows_permanent_delete(),
+			'allow_code'             => Policy::allows_code(),
 			'compact_mode'           => (bool) get_option( 'viagent_production_compact_mode', false ),
 			'delete_data'            => (bool) get_option( 'viagent_production_delete_data_on_uninstall', false ),
 			'integrations'           => \ViagentProduction\Integrations\Integrations::status(),
@@ -280,6 +282,9 @@ class Admin_API {
 		}
 		if ( null !== $request['allow_permanent_delete'] ) {
 			update_option( Policy::PERMANENT_DELETE_OPTION, (bool) $request['allow_permanent_delete'] );
+		}
+		if ( null !== $request['allow_code'] ) {
+			update_option( Policy::CODE_OPTION, (bool) $request['allow_code'] );
 		}
 		if ( null !== $request['compact_mode'] ) {
 			update_option( 'viagent_production_compact_mode', (bool) $request['compact_mode'] );
@@ -557,6 +562,24 @@ class Admin_API {
 			'restore_post'           => __( 'Bring posts and pages back from the trash.', 'viagent-production' ),
 			'list_revisions'         => __( 'See earlier versions of a post or page.', 'viagent-production' ),
 			'restore_revision'       => __( 'Roll a post or page back to an earlier version.', 'viagent-production' ),
+			'bulk_create_posts'      => __( 'Create many posts, pages or items at once.', 'viagent-production' ),
+			'bulk_update_posts'      => __( 'Change many posts, pages or items at once.', 'viagent-production' ),
+			'duplicate_post'         => __( 'Copy a post or page, including its layout and fields.', 'viagent-production' ),
+			'replace_in_post'        => __( 'Find and replace text inside a post or page.', 'viagent-production' ),
+			'get_post_blocks'        => __( 'See the block structure of a page.', 'viagent-production' ),
+			'edit_post_blocks'       => __( 'Change, add or remove individual blocks.', 'viagent-production' ),
+			'prepare_content'        => __( 'Convert HTML or Markdown to blocks and check block markup.', 'viagent-production' ),
+			'list_content_types'     => __( 'See custom post types and taxonomies the AI created.', 'viagent-production' ),
+			'register_post_type'     => __( 'Create custom post types with custom fields.', 'viagent-production' ),
+			'register_taxonomy'      => __( 'Create custom taxonomies.', 'viagent-production' ),
+			'delete_content_type'    => __( 'Remove custom post types or taxonomies (content is kept).', 'viagent-production' ),
+			'list_templates'         => __( 'See the theme\'s templates and template parts.', 'viagent-production' ),
+			'get_template'           => __( 'Read a template or template part.', 'viagent-production' ),
+			'update_template'        => __( 'Edit templates, headers and footers.', 'viagent-production' ),
+			'create_template'        => __( 'Create templates and template parts.', 'viagent-production' ),
+			'delete_template'        => __( 'Delete or revert templates.', 'viagent-production' ),
+			'get_global_styles'      => __( 'See the site\'s colors, fonts and spacing.', 'viagent-production' ),
+			'update_global_styles'   => __( 'Change the site\'s colors, fonts and spacing.', 'viagent-production' ),
 			'get_post_meta'          => __( 'Read custom fields on a post.', 'viagent-production' ),
 			'update_post_meta'       => __( 'Change custom fields on a post.', 'viagent-production' ),
 			'list_block_types'       => __( 'See which blocks can be used in content.', 'viagent-production' ),
@@ -586,8 +609,25 @@ class Admin_API {
 			'update_navigation_menu' => __( 'Edit the navigation menu of a block theme.', 'viagent-production' ),
 			'get_settings'           => __( 'See the site title, homepage, timezone and other settings.', 'viagent-production' ),
 			'update_settings'        => __( 'Change the site title, homepage, timezone and similar settings.', 'viagent-production' ),
+			'list_roles'             => __( 'See the user roles on the site.', 'viagent-production' ),
+			'create_user'            => __( 'Add user accounts with any role.', 'viagent-production' ),
+			'update_user'            => __( 'Edit user profiles, roles and passwords.', 'viagent-production' ),
+			'delete_user'            => __( 'Permanently delete user accounts.', 'viagent-production' ),
 			'list_plugins'           => __( 'See installed plugins.', 'viagent-production' ),
+			'install_plugin'         => __( 'Install plugins from WordPress.org or a .zip link.', 'viagent-production' ),
+			'activate_plugin'        => __( 'Turn plugins on.', 'viagent-production' ),
+			'deactivate_plugin'      => __( 'Turn plugins off.', 'viagent-production' ),
+			'update_plugin'          => __( 'Update plugins to the latest version.', 'viagent-production' ),
+			'delete_plugin'          => __( 'Permanently delete plugins.', 'viagent-production' ),
 			'list_themes'            => __( 'See installed themes.', 'viagent-production' ),
+			'install_theme'          => __( 'Install themes from WordPress.org or a .zip link.', 'viagent-production' ),
+			'activate_theme'         => __( 'Switch the site’s theme.', 'viagent-production' ),
+			'update_theme'           => __( 'Update themes to the latest version.', 'viagent-production' ),
+			'delete_theme'           => __( 'Permanently delete themes.', 'viagent-production' ),
+			'list_extension_files'   => __( 'Browse the files of a theme or plugin.', 'viagent-production' ),
+			'read_extension_file'    => __( 'Read theme and plugin code.', 'viagent-production' ),
+			'write_extension_file'   => __( 'Edit theme and plugin code, or build a child theme.', 'viagent-production' ),
+			'delete_extension_file'  => __( 'Delete files from a theme or plugin.', 'viagent-production' ),
 			'get_site_health'        => __( 'Check versions, updates and technical health.', 'viagent-production' ),
 		);
 
@@ -762,6 +802,22 @@ class Admin_API {
 				return __( 'The settings will go back to their previous values.', 'viagent-production' );
 			case 'restore_metas':
 				return __( 'The fields will go back to their previous values.', 'viagent-production' );
+			case 'batch':
+				/* translators: %d: number of changes */
+				return sprintf( __( 'All %d changes made in this step will be undone.', 'viagent-production' ), count( (array) $undo['items'] ) );
+			case 'activate_plugin':
+				return __( 'The plugin will be activated again.', 'viagent-production' );
+			case 'deactivate_plugin':
+				return __( 'The plugin will be deactivated again.', 'viagent-production' );
+			case 'switch_theme':
+				/* translators: %s: theme folder */
+				return sprintf( __( 'The site will switch back to the “%s” theme.', 'viagent-production' ), $undo['stylesheet'] );
+			case 'restore_file':
+				return null === $undo['content']
+					? __( 'The file the AI created will be deleted.', 'viagent-production' )
+					: __( 'The file will go back to how it was before this change.', 'viagent-production' );
+			case 'restore_user':
+				return __( 'The user’s profile and role will go back to how they were (password changes are not undone).', 'viagent-production' );
 		}
 
 		/**

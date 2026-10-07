@@ -4,7 +4,7 @@ Tags: mcp, ai, ai agent, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,35 +32,55 @@ Claude (Claude.ai, Claude Desktop and Claude Code), ChatGPT, Cursor, VS Code wit
 
 = What your AI can do on your site =
 
-* **Posts, pages and custom post types** – create, edit, schedule, trash and restore, and roll back to earlier revisions.
+* **Any content type** – posts, pages, custom post types and synced patterns: create, edit, schedule, password-protect, make sticky, set author, post format, custom fields, categories and any taxonomy; trash, restore and roll back to earlier revisions.
+* **Write in any format** – block markup, HTML or Markdown. HTML and Markdown become real core blocks (headings, lists, quotes, code, images, tables), and every save is checked for broken block markup.
+* **Edit long pages precisely** – see a page's block outline and change, insert, move or delete individual blocks (also inside columns and groups), or find and replace text, instead of rewriting the whole page.
+* **Work in bulk** – create or update up to 25 items at once, duplicate posts (with page builder data and fields), and filter lists by any taxonomy, custom field or date. Bulk changes undo in one click.
+* **Build new content types** (Full control) – create custom post types with custom fields and custom taxonomies (e.g. Recipes with a Cuisine taxonomy and cooking time), ready for the block editor and REST API.
+* **Site editor** (Full control, block themes) – edit templates and template parts such as the header and footer, create new templates, and change global styles (colors, fonts, spacing). Every change can be undone.
 * **Blocks and patterns** – write proper block-editor content and use your theme's ready-made layouts.
 * **Media library** – upload images from a link, write alt text and captions, set featured images.
 * **Categories, tags and custom taxonomies.**
 * **Comments** – read, reply and moderate.
-* **Menus and basic site settings** (title, tagline, homepage, timezone, comments), plus a read-only view of users, plugins and themes (with the Site manager level).
+* **Menus and basic site settings** (title, tagline, homepage, timezone, comments).
+* **Plugins and themes** (Full control) – install from WordPress.org or a .zip link, activate, deactivate, update and delete.
+* **Theme and plugin code** (Full control) – browse, read and edit files, or build a child theme. PHP is syntax-checked, a change that breaks the site is rolled back automatically, and every edit can be undone.
+* **Users** (Full control) – create, edit and delete accounts, change roles and reset passwords. The connected account cannot delete itself or lose its administrator role, and the last administrator is always kept.
 * **Site health** – a read-only technical overview (versions, pending updates, HTTPS, cron).
+
+= Complete SEO toolkit =
+
+Built in and works on every site. With **Yoast SEO, Rank Math, All in One SEO, SEOPress or The SEO Framework** your AI reads and writes that plugin's own fields; without an SEO plugin, Viagent Production outputs the SEO tags itself (titles, meta descriptions, canonical, robots, Open Graph, Twitter cards, JSON-LD and a clean sitemap).
+
+* **Search titles, meta descriptions, focus keywords, canonical URLs, noindex/nofollow and social sharing text and images** for posts, pages, products, categories and tags – one at a time or up to 50 at once.
+* **Page audits** with a 0–100 score: keyword placement and density, headings, content length, readability, image alt text, internal and external links, keyword cannibalization, and a check of what the live page really outputs (title tag, description, canonical, robots, H1, Open Graph, schema, speed).
+* **Site-wide SEO audit** – missing or duplicate titles and descriptions, thin content, noindex pages, missing alt text and featured images, pages without internal links, plus site problems such as blocked indexing, plain permalinks or no HTTPS.
+* **Internal link suggestions** (outbound and inbound) and a **broken link checker**.
+* **Structured data** – add FAQ, HowTo, Product, LocalBusiness or any other JSON-LD to a page.
+* **Redirects** (301, 302, 307, 410, 451, with regex) and a **404 monitor** that shows which broken URLs get traffic.
+* **robots.txt editor**, **search engine verification codes** (Google, Bing, Yandex, Pinterest, Baidu), homepage and organization details.
+* **Request indexing** via IndexNow (Bing, Yandex and others).
 
 = Integrations with popular plugins =
 
 Extra tools appear automatically when these plugins are active:
 
 * **WooCommerce** – store overview, products (prices, stock, categories), orders, coupons and customers.
-* **Yoast SEO and Rank Math** – SEO titles, meta descriptions, focus keywords and indexing, plus an SEO issue finder.
 * **Advanced Custom Fields (ACF)** – see field groups and fill in custom fields.
 * **Contact Form 7, WPForms and Gravity Forms** – find forms with their embed code and read submissions.
 * **Any plugin that uses the WordPress Abilities API** – switch its abilities on under Tools.
 
 = Ready-made tasks =
 
-AI apps that support MCP prompts (such as Claude Desktop, Claude Code and VS Code) can offer one-click tasks: *Get to know my site*, *Write a blog post*, *Improve a page*, *SEO check-up*, *Fix missing image descriptions*, *Plan my content*, *Review new comments*, *Site health check*, *Store report*, *Add a product* and *Summarize form submissions*.
+AI apps that support MCP prompts (such as Claude Desktop, Claude Code and VS Code) can offer one-click tasks: *Get to know my site*, *Write a blog post*, *Improve a page*, *SEO check-up*, *Optimize a page for a keyword*, *Fix missing image descriptions*, *Plan my content*, *Review new comments*, *Site health check*, *Store report*, *Add a product* and *Summarize form submissions*.
 
 = Safe by default =
 
-* **You choose the access** – Read only, Content editor or Site manager, per app.
+* **You choose the access** – Read only, Content editor or Full control, per app.
 * **Drafts only** – new connections can write and edit drafts, but not publish or delete, until you allow it.
 * **Undo anything** – every action is logged under Activity, and content changes can be undone with one click.
 * **Trash, not delete** – deleted content goes to the trash. Permanent deletion is off unless you turn it on.
-* **No site administration, ever** – even when connected through an administrator account, AI apps are blocked from installing, activating, updating or editing plugins and themes, updating WordPress, editing files, managing user accounts, importing or exporting, and network administration. They also cannot change your site address, admin email, user registration and roles, search engine visibility or Viagent Production's own safety settings. Those stay in your hands in the WordPress dashboard.
+* **Core stays with you** – even with Full control, AI apps cannot update WordPress core, import or export, run network administration, post unfiltered HTML, or change your site address, admin email, user registration, search engine visibility, permalinks or Viagent Production's own settings. Viagent Production cannot deactivate, update, delete or edit itself.
 * **Pause switch** – block every AI app instantly, and resume when you're ready.
 * **Revoke any app** at any time; it's disconnected immediately.
 * **Standards-based security** – OAuth 2.1 with PKCE for sign-in, and hashed connection keys and tokens.
@@ -102,7 +122,7 @@ Yes. Cursor and VS Code have one-click install buttons, and Windsurf, Codex, Gem
 
 = Is it safe to let AI change my site? =
 
-Every app acts as the WordPress user who connected it and can never do more than that user. Administrative capabilities are always blocked for AI connections, whatever the user's role. New connections are limited to drafts, deletions go to the trash, everything is logged, and content changes can be undone with one click. You can pause all AI access at any time.
+Every app acts as the WordPress user who connected it and can never do more than that user. Whatever the user's role, an AI connection can never update WordPress itself, import or export, change the site address, admin email, registration or role settings, change the password or email of an administrator (or of the account it acts as), or unpause itself. Only the Full control level may manage plugins, themes and user accounts, and the approval screen says so. Even then, writing or deleting theme and plugin code and installing from a .zip link stay off until you turn on "Allow AI apps to change code" in Settings — code an AI writes runs on your server, so this is your call to make. New connections are limited to drafts, deletions go to the trash, everything is logged, and content changes can be undone with one click. You can pause all AI access at any time.
 
 = What should I say to my AI first? =
 
@@ -142,12 +162,33 @@ Viagent Production does not send your site's content to AI providers or to its a
 
 * **AI app sign-in details** (for example chatgpt.com) – when an AI app signs in with a Client ID Metadata Document, Viagent Production downloads that app's public client description from the web address the app provides (such as `https://chatgpt.com/oauth/…/client.json`) to check where to send you back after you approve. Only a normal download request is sent; no site data. The result is cached for an hour. See the privacy policy of the app you connect, for example [OpenAI's privacy policy](https://openai.com/policies/privacy-policy/).
 * **Web addresses provided by your AI app** – when an AI app uploads an image or file from a link, Viagent Production downloads that file from the address the app gave. Only a normal download request is sent to that address. Local and private network addresses are blocked.
+* **IndexNow** (api.indexnow.org) – only when your AI uses the *request indexing* tool, the addresses of the pages it names and your site's IndexNow key are sent to IndexNow, which shares them with participating search engines (Bing, Yandex, Seznam, Naver and others). See the [IndexNow documentation](https://www.indexnow.org/documentation) and [Microsoft's privacy statement](https://privacy.microsoft.com/privacystatement).
+* **Links in your content** – the *check links* tool sends a normal request to each link in a page to see whether it still works. No site data is sent.
 
 The connect wizard shows setup snippets and links to each AI app's own documentation (for example docs.anthropic.com, opencode.ai or docs.cursor.com). They are plain links: nothing is loaded from those sites unless you click one.
 
 AI apps such as Claude, ChatGPT or Cursor connect to your site; your site does not connect to them. The content they read is handled under the privacy policy of the app you use.
 
 == Changelog ==
+
+= 1.3.0 =
+* Content in any format: block markup, HTML or Markdown, converted to core blocks and validated.
+* Block-level editing (outline, replace, insert, delete, attributes — including nested blocks) and find and replace inside posts.
+* Bulk create and update (with one-step undo), duplicate post, richer list filters (any taxonomy, custom fields, dates, parent) and full content in lists.
+* New post fields: custom fields in the same call, author, password, sticky, post format and pingbacks. Plugin-private custom fields (e.g. page builder data) with Full control.
+* Create custom post types, taxonomies and custom fields.
+* Site editor tools for block themes: templates, template parts and global styles.
+* Synced patterns can be created and edited like other content.
+
+= 1.2.0 =
+* Complete SEO toolkit for AI agents, built in and compatible with Yoast SEO, Rank Math, All in One SEO, SEOPress and The SEO Framework – or standalone, with Viagent Production printing the SEO tags itself.
+* New tools: SEO overview, bulk SEO updates, page SEO analysis with live-page checks, site-wide SEO audit, internal link suggestions, broken link check, category and tag SEO, custom JSON-LD schema, site SEO settings and verification codes, robots.txt editor, redirects, 404 monitor and IndexNow indexing requests.
+* New ready-made task: Optimize a page for a keyword.
+* AI connections may make the site visible to search engines, but never hide it.
+
+= 1.1.0 =
+* Full control: AI connections can install, activate, deactivate, update and delete plugins and themes, read and edit theme and plugin files (with PHP syntax checks, automatic rollback and undo), and create, edit and delete users and their roles.
+* "Site manager" is now called "Full control".
 
 = 1.0.2 =
 * AI connections can no longer use administrative capabilities (plugins, themes, updates, files, users, import/export, network administration), even when connected through an administrator account.
@@ -174,6 +215,15 @@ AI apps such as Claude, ChatGPT or Cursor connect to your site; your site does n
 * Safety controls: access levels, drafts-only mode, activity log with undo, and a pause switch.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+AI agents can now create any type of content in any format, edit blocks precisely, work in bulk, create custom post types and edit block theme templates and styles.
+
+= 1.2.0 =
+Complete SEO toolkit for AI agents, with or without an SEO plugin.
+
+= 1.1.0 =
+Full control: AI connections with the Full control level can now manage plugins, themes, their code and users.
 
 = 1.0.2 =
 AI connections can no longer perform any site administration, even through an administrator account.

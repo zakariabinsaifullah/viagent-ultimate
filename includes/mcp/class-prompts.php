@@ -89,23 +89,36 @@ class Prompts {
 			),
 			'seo_audit'            => array(
 				'title'       => __( 'SEO check-up', 'viagent-production' ),
-				'description' => __( 'Finds pages with weak or missing SEO and offers to fix them.', 'viagent-production' ),
+				'description' => __( 'Audits the whole site for SEO problems and offers to fix them.', 'viagent-production' ),
 				'arguments'   => array(),
-				'requires'    => array( 'list_posts', 'get_post' ),
+				'requires'    => array( 'get_seo_overview', 'find_seo_issues' ),
 				'build'       => static function ( $args, $tools ) {
-					if ( isset( $tools['find_seo_issues'] ) ) {
-						$text = "Do an SEO check-up of my WordPress site.\n"
-							. "1. Run find_seo_issues.\n"
-							. "2. Give me a short, prioritized report in plain language: what's wrong, why it matters, and which pages are affected.\n";
-						if ( isset( $tools['update_seo'] ) ) {
-							$text .= "3. Offer to write the missing meta descriptions (120–155 characters) and focus keywords. Only change them with update_seo after I confirm.\n";
-						}
-						return $text;
+					$text = "Do an SEO check-up of my WordPress site.\n"
+						. "1. Run get_seo_overview, then find_seo_issues.\n";
+					if ( isset( $tools['list_404_errors'] ) ) {
+						$text .= "2. Check list_404_errors for broken URLs that get traffic.\n";
 					}
-					return "Do a basic SEO check-up of my WordPress site (no SEO plugin is installed).\n"
-						. "1. Use list_posts for posts and pages, and read the most important ones with get_post.\n"
-						. "2. Check titles (clear, under 60 characters), excerpts, heading structure and images without alt text (list_media).\n"
-						. '3. Give me a prioritized, plain-language report, and suggest installing Yoast SEO or Rank Math if meta descriptions are needed.';
+					$text .= "3. Give me a short, prioritized report in plain language: what's wrong, why it matters, and which pages are affected. Site-level problems first.\n";
+					if ( isset( $tools['bulk_update_seo'] ) ) {
+						$text .= "4. Offer to write the missing or weak search titles (under 60 characters), meta descriptions (120–155 characters) and focus keywords, and to add 301 redirects for important 404s. Only change things after I confirm, using bulk_update_seo and create_redirect.\n";
+					}
+					return $text;
+				},
+			),
+			'optimize_page_seo'    => array(
+				'title'       => __( 'Optimize a page for a keyword', 'viagent-production' ),
+				'description' => __( 'Audits one page for a search keyword and improves it.', 'viagent-production' ),
+				'arguments'   => array(
+					'page'    => array( __( 'Page or post title, URL or ID.', 'viagent-production' ), true ),
+					'keyword' => array( __( 'The search phrase to rank for.', 'viagent-production' ), true ),
+				),
+				'requires'    => array( 'search_content', 'analyze_seo', 'update_seo' ),
+				'build'       => static function ( $args ) {
+					return "Optimize this page on my WordPress site for the search phrase \"{$args['keyword']}\": {$args['page']}\n\n"
+						. "1. Find it with search_content (or use the ID) and run analyze_seo with focus_keyword \"{$args['keyword']}\".\n"
+						. "2. Run suggest_internal_links for it in both directions.\n"
+						. "3. Show me the score, the most important problems and your plan: new search title, meta description, content changes (headings, intro, alt text) and internal links.\n"
+						. '4. After I confirm, apply it with update_seo (and update_post for content), then run analyze_seo again and tell me the new score.';
 				},
 			),
 			'fix_missing_alt_text' => array(

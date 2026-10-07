@@ -46,8 +46,8 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="viagent-production"/>
-				<element value="Viagent Production"/>
+				<element value="viagent_production"/>
+				<element value="ViagentProduction"/>
 			</property>
 		</properties>
 	</rule>

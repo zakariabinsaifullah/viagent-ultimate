@@ -236,10 +236,10 @@ class ACF {
 			return $editable;
 		}
 
-		$field = acf_get_field( $input['field'] );
+		// Resolve the field for this post first (names and keys), then fall back to the global field lookup.
+		$field = get_field_object( $input['field'], $post->ID, false, false );
 		if ( ! $field ) {
-			// Field names only resolve in the context of a post.
-			$field = get_field_object( $input['field'], $post->ID, false, false );
+			$field = acf_get_field( $input['field'] );
 		}
 		if ( ! $field ) {
 			return new WP_Error( 'viagent_production_unknown_field', __( 'No ACF field with that name or key applies to this post. Use list_acf_field_groups with the post_id.', 'viagent-production' ) );
@@ -249,8 +249,13 @@ class ACF {
 			return new WP_Error( 'viagent_production_unsupported_field', sprintf( __( 'Fields of type "%s" can be read but not changed by AI apps yet. Edit this field in WordPress.', 'viagent-production' ), $field['type'] ) );
 		}
 
+		$value = $input['value'];
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			$value = self::sanitize_value( $field, $value );
+		}
+
 		$previous = get_field( $field['key'], $post->ID, false );
-		if ( ! update_field( $field['key'], $input['value'], $post->ID ) && get_field( $field['key'], $post->ID, false ) !== $input['value'] ) {
+		if ( ! update_field( $field['key'], $value, $post->ID ) && get_field( $field['key'], $post->ID, false ) !== $value ) {
 			return new WP_Error( 'viagent_production_update_failed', __( 'The field could not be saved.', 'viagent-production' ) );
 		}
 
@@ -269,6 +274,148 @@ class ACF {
 			'field'   => $field['name'],
 			'value'   => get_field( $field['key'], $post->ID, false ),
 		);
+	}
+
+	/**
+	 * Sanitizes a value for a field type, the way WordPress would for a user
+	 * without unfiltered_html. Numbers and booleans pass through unchanged.
+	 *
+	 * @param array $field ACF field.
+	 * @param mixed $value Value.
+	 * @return mixed
+	 */
+	private static function sanitize_value( array $field, $value ) {
+		if ( null === $value || is_int( $value ) || is_float( $value ) || is_bool( $value ) ) {
+			return $value;
+		}
+		$type = (string) ( $field['type'] ?? '' );
+
+		switch ( $type ) {
+			case 'wysiwyg':
+				return is_string( $value ) ? wp_kses_post( $value ) : self::sanitize_unknown( $value );
+
+			case 'textarea':
+				return is_string( $value ) ? sanitize_textarea_field( $value ) : self::sanitize_unknown( $value );
+
+			case 'text':
+			case 'email':
+			case 'number':
+			case 'range':
+			case 'password':
+			case 'select':
+			case 'radio':
+			case 'button_group':
+			case 'checkbox':
+			case 'true_false':
+			case 'date_picker':
+			case 'date_time_picker':
+			case 'time_picker':
+			case 'color_picker':
+				return self::sanitize_scalars( $value );
+
+			case 'url':
+			case 'oembed':
+			case 'page_link':
+				if ( is_array( $value ) ) {
+					return array_map( 'esc_url_raw', array_map( 'strval', $value ) );
+				}
+				return esc_url_raw( (string) $value );
+
+			case 'link':
+				if ( ! is_array( $value ) ) {
+					return esc_url_raw( (string) $value );
+				}
+				$link = array();
+				foreach ( $value as $key => $item ) {
+					$key          = sanitize_key( (string) $key );
+					$link[ $key ] = 'url' === $key ? esc_url_raw( (string) $item ) : sanitize_text_field( (string) $item );
+				}
+				return $link;
+
+			case 'image':
+			case 'file':
+			case 'post_object':
+			case 'relationship':
+			case 'taxonomy':
+			case 'user':
+			case 'gallery':
+				if ( is_array( $value ) ) {
+					return array_map( 'intval', array_filter( $value, 'is_scalar' ) );
+				}
+				return (int) $value;
+
+			case 'repeater':
+			case 'group':
+			case 'flexible_content':
+				if ( ! is_array( $value ) ) {
+					return self::sanitize_unknown( $value );
+				}
+				$subs = array();
+				foreach ( (array) ( $field['sub_fields'] ?? array() ) as $sub ) {
+					$subs[ $sub['key'] ]  = $sub;
+					$subs[ $sub['name'] ] = $sub;
+				}
+				if ( 'flexible_content' === $type ) {
+					foreach ( (array) ( $field['layouts'] ?? array() ) as $layout ) {
+						foreach ( (array) ( $layout['sub_fields'] ?? array() ) as $sub ) {
+							$subs[ $sub['key'] ]  = $sub;
+							$subs[ $sub['name'] ] = $sub;
+						}
+					}
+				}
+				return self::sanitize_rows( $value, $subs );
+
+			default:
+				return self::sanitize_unknown( $value );
+		}
+	}
+
+	/**
+	 * Sanitizes rows (or one row) of a repeater, group or flexible content
+	 * field by matching keys to its sub-fields.
+	 *
+	 * @param array $value Rows or a single row, keyed by sub-field name or key.
+	 * @param array $subs  Sub-fields keyed by both name and key.
+	 * @return array
+	 */
+	private static function sanitize_rows( array $value, array $subs ) {
+		$clean = array();
+		foreach ( $value as $key => $item ) {
+			if ( is_string( $key ) && isset( $subs[ $key ] ) ) {
+				$clean[ $key ] = self::sanitize_value( $subs[ $key ], $item );
+			} elseif ( is_array( $item ) ) {
+				$clean[ $key ] = self::sanitize_rows( $item, $subs );
+			} else {
+				$clean[ $key ] = is_string( $item ) ? sanitize_text_field( $item ) : $item;
+			}
+		}
+		return $clean;
+	}
+
+	/**
+	 * Plain-text sanitizing for a scalar or an array of scalars.
+	 *
+	 * @param mixed $value Value.
+	 * @return mixed
+	 */
+	private static function sanitize_scalars( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( array( self::class, 'sanitize_scalars' ), $value );
+		}
+		return is_string( $value ) ? sanitize_text_field( $value ) : $value;
+	}
+
+	/**
+	 * Fallback for unknown field types: post-safe HTML on strings, recursing into arrays.
+	 *
+	 * @param mixed $value Value.
+	 * @return mixed
+	 */
+	private static function sanitize_unknown( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( array( self::class, 'sanitize_unknown' ), $value );
+		}
+		return is_string( $value ) ? wp_kses_post( $value ) : $value;
 	}
 
 	/**

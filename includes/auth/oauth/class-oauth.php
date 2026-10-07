@@ -34,6 +34,11 @@ class OAuth {
 	const CODE_TTL    = 10 * MINUTE_IN_SECONDS;
 
 	/**
+	 * Client ID Metadata Documents one IP address may make the site fetch per hour.
+	 */
+	const METADATA_FETCHES_PER_HOUR = 30;
+
+	/**
 	 * Whether OAuth is enabled.
 	 *
 	 * @return bool
@@ -202,17 +207,34 @@ class OAuth {
 	}
 
 	/**
-	 * Gets a client.
+	 * Gets a client for an authorization request. A Client ID Metadata
+	 * Document client is (re)fetched from its URL, so only call this once the
+	 * user is signed in.
 	 *
 	 * @param string $client_id Client ID.
 	 * @return object|null Row with decoded `redirect_uris`.
 	 */
 	public static function get_client( $client_id ) {
-		global $wpdb;
 		if ( is_string( $client_id ) && self::is_metadata_client_id( $client_id ) ) {
 			return self::get_metadata_client( $client_id );
 		}
-		if ( ! is_string( $client_id ) || 0 !== strpos( $client_id, self::CLIENT_PREFIX ) ) {
+		return self::find_client( $client_id );
+	}
+
+	/**
+	 * Gets a known client from the database only — no network. Used by the
+	 * public token endpoint, where a client must already have completed an
+	 * authorization request.
+	 *
+	 * @param string $client_id Client ID.
+	 * @return object|null Row with decoded `redirect_uris`.
+	 */
+	public static function find_client( $client_id ) {
+		global $wpdb;
+		if ( ! is_string( $client_id ) || '' === $client_id || strlen( $client_id ) > 255 ) {
+			return null;
+		}
+		if ( 0 !== strpos( $client_id, self::CLIENT_PREFIX ) && ! self::is_metadata_client_id( $client_id ) ) {
 			return null;
 		}
 		$table  = Installer::table( 'oauth_clients' );
@@ -255,6 +277,14 @@ class OAuth {
 		$document  = get_transient( $cache_key );
 
 		if ( ! is_array( $document ) ) {
+			// A signed-in user may still only make the site fetch so many documents an hour.
+			$ip_key = 'viagent_production_cimd_ip_' . md5( (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ) . gmdate( 'YmdH' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$count  = (int) get_transient( $ip_key ) + 1;
+			set_transient( $ip_key, $count, HOUR_IN_SECONDS );
+			if ( $count > self::METADATA_FETCHES_PER_HOUR ) {
+				return null;
+			}
+
 			// wp_safe_remote_get() refuses local and private network addresses.
 			$response = wp_safe_remote_get(
 				$client_id,
@@ -573,8 +603,8 @@ class OAuth {
 			$options['admin'] = array(
 				'level'       => Policy::ADMIN,
 				'draft_only'  => false,
-				'label'       => __( 'Site manager', 'viagent-production' ),
-				'description' => __( 'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.', 'viagent-production' ),
+				'label'       => __( 'Full control', 'viagent-production' ),
+				'description' => __( 'Everything above plus menus, site settings, plugins, themes, theme and plugin code, and user accounts.', 'viagent-production' ),
 			);
 		}
 		return $options;

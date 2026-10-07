@@ -53,8 +53,8 @@ class Admin {
 	 */
 	public static function add_menu() {
 		self::$hook_suffix = (string) add_management_page(
-			__( 'Viagent Production', 'viagent-production' ),
-			__( 'Viagent Production', 'viagent-production' ),
+			__( 'Viagent Ultimate', 'viagent-production' ),
+			__( 'Viagent Ultimate', 'viagent-production' ),
 			'manage_options',
 			self::SLUG,
 			array( self::class, 'render' )
@@ -117,6 +117,9 @@ class Admin {
 			'siteName'   => get_bloginfo( 'name' ),
 			'siteUrl'    => home_url( '/' ),
 			'isLocal'    => Health::is_local(),
+			// Only an https development site needs the bridge to skip certificate checks;
+			// that setting disables TLS verification for the whole app process, so never suggest it otherwise.
+			'devCert'    => Health::is_local() && 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ),
 			'oauth'      => \ViagentProduction\Auth\OAuth\OAuth::enabled(),
 			'user'       => wp_get_current_user()->display_name,
 			'levels'     => Policy::level_labels(),

@@ -56,12 +56,12 @@ const ACCESS = [
 	},
 	{
 		id: 'admin',
-		title: __( 'Site manager', 'viagent-production' ),
+		title: __( 'Full control', 'viagent-production' ),
 		description: __(
-			'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.',
+			'Everything above plus menus, site settings, plugins, themes, theme and plugin code, and user accounts.',
 			'viagent-production'
 		),
-		example: __( '“Set my Contact page as the homepage”', 'viagent-production' ),
+		example: __( '“Install WooCommerce and build me a child theme”', 'viagent-production' ),
 	},
 ];
 
@@ -376,7 +376,7 @@ function HelpModal( { client, onClose, onRedo } ) {
 			className="viagent-production-help-modal"
 		>
 			<div className="viagent-production-connect-steps">
-				{ settings.isLocal && bridge && (
+				{ settings.devCert && bridge && (
 					<Notice status="warning" isDismissible={ false }>
 						{ __(
 							'This site runs on your computer and uses a development security certificate. Make sure the "env" section of your configuration also contains this line, then restart the app:',
@@ -512,7 +512,7 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 				{ sprintf(
 					/* translators: %s: user display name */
 					__(
-						'The AI will act as you (%s), so it can never do more than your own account can. Site administration (plugins, themes, users, updates) is always blocked for AI apps.',
+						'The AI will act as you (%s), so it can never do more than your own account can. With Full control it can manage plugins, themes, their code and users; WordPress core updates and the site address stay with you.',
 						'viagent-production'
 					),
 					settings.user
@@ -648,7 +648,7 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 		name: settings.serverName,
 		// Node.js does not trust local development certificates.
 		localEnv:
-			settings.isLocal && bridge
+			settings.devCert && bridge
 				? ',\n        "NODE_TLS_REJECT_UNAUTHORIZED": "0"'
 				: '',
 	};
@@ -759,7 +759,7 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 						</Button>
 					) }
 				</details>
-				{ settings.isLocal && bridge && (
+				{ settings.devCert && bridge && (
 					<p className="viagent-production-muted">
 						{ __(
 							'Because this site runs on your computer, the configuration includes a line that lets the bridge accept its local security certificate. Live sites don’t need it.',
@@ -767,7 +767,7 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 						) }
 					</p>
 				) }
-				{ settings.isLocal && client.local_tip && (
+				{ settings.devCert && client.local_tip && (
 					<Notice status="info" isDismissible={ false }>
 						{ client.local_tip }
 					</Notice>

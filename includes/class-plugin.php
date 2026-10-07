@@ -57,6 +57,8 @@ final class Plugin {
 
 		add_action( 'wp_abilities_api_categories_init', array( Abilities\Abilities::class, 'register_categories' ) );
 		add_action( 'wp_abilities_api_init', array( Abilities\Abilities::class, 'register' ) );
+		Abilities\Content_Types::init();
+		Abilities\Site_Editor::init();
 
 		// Integrations load after every plugin so WooCommerce, SEO plugins and ACF can be detected.
 		add_action( 'plugins_loaded', array( Integrations\Integrations::class, 'init' ), 20 );
@@ -93,7 +95,10 @@ final class Plugin {
 			'admin/class-health.php',
 			'abilities/class-abilities.php',
 			'abilities/class-site.php',
+			'abilities/class-content-format.php',
 			'abilities/class-content.php',
+			'abilities/class-content-types.php',
+			'abilities/class-site-editor.php',
 			'abilities/class-blocks.php',
 			'abilities/class-taxonomies.php',
 			'abilities/class-media.php',
@@ -102,11 +107,16 @@ final class Plugin {
 			'abilities/class-menus.php',
 			'abilities/class-settings.php',
 			'abilities/class-extensions.php',
+			'abilities/class-files.php',
 			'abilities/class-meta.php',
 			'abilities/class-diagnostics.php',
 			'integrations/class-integrations.php',
 			'integrations/class-woocommerce.php',
-			'integrations/class-seo.php',
+			'seo/class-store.php',
+			'seo/class-head.php',
+			'seo/class-redirects.php',
+			'seo/class-audit.php',
+			'seo/class-seo.php',
 			'integrations/class-acf.php',
 			'integrations/class-forms.php',
 		);

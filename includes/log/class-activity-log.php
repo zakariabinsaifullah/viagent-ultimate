@@ -89,6 +89,18 @@ class Activity_Log {
 	}
 
 	/**
+	 * Returns and clears the undo instructions recorded so far, so a bulk tool
+	 * can collect the undo of each step.
+	 *
+	 * @return array|null
+	 */
+	public static function take_undo() {
+		$undo       = self::$undo;
+		self::$undo = null;
+		return $undo;
+	}
+
+	/**
 	 * Writes a log entry for a finished tool call.
 	 *
 	 * @param Connection $connection  Connection.
@@ -112,9 +124,9 @@ class Activity_Log {
 				'connection'    => $connection->name,
 				'agent'         => $connection->agent,
 				'tool'          => $tool,
-				'arguments'     => wp_json_encode( self::redact( $arguments ) ),
+				'arguments'     => wp_json_encode( self::redact( $arguments, 'write_extension_file' === $tool ) ),
 				'status'        => $is_error ? 'error' : 'ok',
-				'message'       => $is_error ? $result->get_error_message() : '',
+				'message'       => $is_error ? mb_substr( $result->get_error_message(), 0, 1000 ) : '',
 				'duration_ms'   => (int) $duration_ms,
 				'object_type'   => self::$object['type'] ?? '',
 				'object_id'     => self::$object['id'] ?? 0,
@@ -128,19 +140,47 @@ class Activity_Log {
 	 * Removes secrets and shortens long values before logging.
 	 *
 	 * @param array $arguments Arguments.
+	 * @param bool  $file_body Whether `content` is a file body (which may embed keys the AI writes into config files).
 	 * @return array
 	 */
-	private static function redact( array $arguments ) {
+	private static function redact( array $arguments, $file_body = false ) {
 		foreach ( $arguments as $key => $value ) {
-			if ( is_string( $key ) && preg_match( '/pass|secret|token|api_?key|base64|^data$/i', $key ) ) {
+			if ( is_string( $key ) && preg_match( '/pass|pwd|secret|token|api_?key|private_key|licen[cs]e|auth|credential|base64|^data$/i', $key ) ) {
 				$arguments[ $key ] = '[redacted]';
+			} elseif ( $file_body && 'content' === $key && is_string( $value ) ) {
+				$arguments[ $key ] = sprintf( '[%d bytes]', strlen( $value ) );
 			} elseif ( is_array( $value ) ) {
-				$arguments[ $key ] = self::redact( $value );
+				$arguments[ $key ] = self::redact( $value, $file_body );
+			} elseif ( is_string( $value ) && preg_match( '#^[a-z][a-z0-9+.-]*://#i', $value ) ) {
+				$arguments[ $key ] = self::redact_url( $value );
 			} elseif ( is_string( $value ) && strlen( $value ) > self::MAX_ARG_LENGTH ) {
 				$arguments[ $key ] = substr( $value, 0, self::MAX_ARG_LENGTH ) . '… [truncated]';
 			}
 		}
 		return $arguments;
+	}
+
+	/**
+	 * Strips credentials and query strings from a URL (pre-signed download
+	 * links, user:token@host) before it is logged.
+	 *
+	 * @param string $url URL.
+	 * @return string
+	 */
+	private static function redact_url( $url ) {
+		$parts = wp_parse_url( $url );
+		if ( ! is_array( $parts ) || empty( $parts['host'] ) ) {
+			return substr( $url, 0, self::MAX_ARG_LENGTH );
+		}
+		$clean = ( $parts['scheme'] ?? 'https' ) . '://' . $parts['host'];
+		if ( ! empty( $parts['port'] ) ) {
+			$clean .= ':' . (int) $parts['port'];
+		}
+		$clean .= $parts['path'] ?? '';
+		if ( isset( $parts['query'] ) || isset( $parts['user'] ) ) {
+			$clean .= isset( $parts['query'] ) ? '?[redacted]' : '';
+		}
+		return substr( $clean, 0, self::MAX_ARG_LENGTH );
 	}
 
 	/**
@@ -259,6 +299,16 @@ class Activity_Log {
 		}
 
 		switch ( $undo['action'] ) {
+			case 'batch':
+				// Undo the steps of a bulk change in reverse order.
+				foreach ( array_reverse( (array) $undo['items'] ) as $item ) {
+					$result = self::apply_undo( (array) $item );
+					if ( is_wp_error( $result ) ) {
+						return $result;
+					}
+				}
+				return true;
+
 			case 'restore_post_fields':
 				$result = wp_update_post( wp_slash( array_merge( (array) $undo['fields'], array( 'ID' => $post_id ) ) ), true );
 				if ( ! is_wp_error( $result ) && isset( $undo['terms'] ) ) {
@@ -268,6 +318,17 @@ class Activity_Log {
 				}
 				if ( ! is_wp_error( $result ) && array_key_exists( 'thumbnail_id', $undo ) ) {
 					$undo['thumbnail_id'] ? set_post_thumbnail( $post_id, (int) $undo['thumbnail_id'] ) : delete_post_thumbnail( $post_id );
+				}
+				if ( ! is_wp_error( $result ) && isset( $undo['meta'] ) ) {
+					foreach ( (array) $undo['meta'] as $key => $value ) {
+						null === $value ? delete_post_meta( $post_id, $key ) : update_post_meta( $post_id, $key, wp_slash( $value ) );
+					}
+				}
+				if ( ! is_wp_error( $result ) && isset( $undo['sticky'] ) ) {
+					$undo['sticky'] ? stick_post( $post_id ) : unstick_post( $post_id );
+				}
+				if ( ! is_wp_error( $result ) && isset( $undo['format'] ) ) {
+					set_post_format( $post_id, $undo['format'] );
 				}
 				return is_wp_error( $result ) ? $result : true;
 
@@ -307,6 +368,36 @@ class Activity_Log {
 					update_option( $name, $value );
 				}
 				return true;
+
+			case 'activate_plugin':
+			case 'deactivate_plugin':
+				if ( ! current_user_can( 'activate_plugins' ) ) {
+					return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to manage plugins.', 'viagent-production' ) );
+				}
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				if ( 'deactivate_plugin' === $undo['action'] ) {
+					deactivate_plugins( $undo['plugin'] );
+					return true;
+				}
+				$result = activate_plugin( $undo['plugin'] );
+				return is_wp_error( $result ) ? $result : true;
+
+			case 'switch_theme':
+				if ( ! current_user_can( 'switch_themes' ) ) {
+					return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to switch themes.', 'viagent-production' ) );
+				}
+				$theme = wp_get_theme( $undo['stylesheet'] );
+				if ( ! $theme->exists() || $theme->errors() ) {
+					return new WP_Error( 'viagent_production_theme_not_found', __( 'The previous theme is no longer installed.', 'viagent-production' ) );
+				}
+				switch_theme( $theme->get_stylesheet() );
+				return true;
+
+			case 'restore_file':
+				return \ViagentProduction\Abilities\Files::restore( $undo );
+
+			case 'restore_user':
+				return \ViagentProduction\Abilities\Users::restore( $undo );
 		}
 
 		/**

@@ -19,6 +19,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Content {
 
+	const MAX_BULK = 25;
+
+	/**
+	 * Longest regular expression replace_in_post accepts, to keep patterns cheap to run.
+	 */
+	const MAX_REGEX_LENGTH = 200;
+
 	/**
 	 * Registers abilities.
 	 */
@@ -47,47 +54,85 @@ class Content {
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'post_type' => array(
+						'post_type'    => array(
 							'type'        => 'string',
 							'default'     => 'post',
 							'description' => __( 'Post type name, e.g. "post" or "page". See list_post_types.', 'viagent-production' ),
 						),
-						'status'    => array(
+						'status'       => array(
 							'type'        => 'string',
 							'enum'        => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
 							'default'     => 'any',
 							'description' => __( '"any" returns every status except trash.', 'viagent-production' ),
 						),
-						'search'    => array( 'type' => 'string' ),
-						'author'    => array(
+						'search'       => array( 'type' => 'string' ),
+						'author'       => array(
 							'type'        => 'integer',
 							'description' => __( 'Author user ID.', 'viagent-production' ),
 						),
-						'category'  => array(
+						'category'     => array(
 							'type'        => 'string',
 							'description' => __( 'Category slug (posts only).', 'viagent-production' ),
 						),
-						'tag'       => array(
+						'tag'          => array(
 							'type'        => 'string',
 							'description' => __( 'Tag slug (posts only).', 'viagent-production' ),
 						),
-						'orderby'   => array(
+						'taxonomy'     => array(
+							'type'        => 'string',
+							'description' => __( 'Any taxonomy to filter by (use with terms), e.g. "product_cat" or a custom taxonomy.', 'viagent-production' ),
+						),
+						'terms'        => array(
+							'type'        => 'array',
+							'items'       => array( 'type' => array( 'string', 'integer' ) ),
+							'description' => __( 'Term slugs or IDs in that taxonomy.', 'viagent-production' ),
+						),
+						'meta_key'     => array( 'type' => 'string' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- input schema, not a query.
+						'meta_value'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- input schema, not a query.
+							'type'        => array( 'string', 'number' ),
+							'description' => __( 'Custom field value to match (with meta_key).', 'viagent-production' ),
+						),
+						'meta_compare' => array(
 							'type'    => 'string',
-							'enum'    => array( 'date', 'modified', 'title', 'menu_order', 'ID' ),
+							'enum'    => array( '=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'EXISTS', 'NOT EXISTS' ),
+							'default' => '=',
+						),
+						'parent'       => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Only children of this ID (0 = top level).', 'viagent-production' ),
+						),
+						'include'      => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'integer' ),
+						),
+						'date_after'   => array(
+							'type'        => 'string',
+							'description' => __( 'Published after this date, e.g. "2026-01-01".', 'viagent-production' ),
+						),
+						'date_before'  => array( 'type' => 'string' ),
+						'with_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Include full content, excerpt and custom fields (use small per_page).', 'viagent-production' ),
+						),
+						'orderby'      => array(
+							'type'    => 'string',
+							'enum'    => array( 'date', 'modified', 'title', 'menu_order', 'ID', 'author', 'parent', 'comment_count', 'rand', 'meta_value', 'meta_value_num', 'relevance' ),
 							'default' => 'date',
 						),
-						'order'     => array(
+						'order'        => array(
 							'type'    => 'string',
 							'enum'    => array( 'asc', 'desc' ),
 							'default' => 'desc',
 						),
-						'per_page'  => array(
+						'per_page'     => array(
 							'type'    => 'integer',
 							'minimum' => 1,
 							'maximum' => 100,
 							'default' => 20,
 						),
-						'page'      => array(
+						'page'         => array(
 							'type'    => 'integer',
 							'minimum' => 1,
 							'default' => 1,
@@ -112,9 +157,14 @@ class Content {
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'id' => array(
+						'id'           => array(
 							'type'    => 'integer',
 							'minimum' => 1,
+						),
+						'include_meta' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Also return the custom fields.', 'viagent-production' ),
 						),
 					),
 					'required'             => array( 'id' ),
@@ -129,6 +179,7 @@ class Content {
 		);
 
 		self::register_writes();
+		self::register_power_tools();
 	}
 
 	/**
@@ -284,6 +335,361 @@ class Content {
 	}
 
 	/**
+	 * Registers bulk, duplicate and find-and-replace abilities.
+	 */
+	private static function register_power_tools() {
+		$fields = self::field_schema();
+		$id     = array(
+			'type'    => 'integer',
+			'minimum' => 1,
+		);
+
+		Abilities::add(
+			'bulk-create-posts',
+			array(
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Bulk create posts', 'viagent-production' ),
+				'description' => __( 'Creates up to 25 posts, pages or custom post type items in one call (same fields as create_post, each with its own post_type). Items that fail are reported; the rest are saved. Undo trashes all of them.', 'viagent-production' ),
+				'input'       => array(
+					'items' => array(
+						'type'     => 'array',
+						'minItems' => 1,
+						'maxItems' => self::MAX_BULK,
+						'items'    => array(
+							'type'       => 'object',
+							'properties' => array_merge(
+								array(
+									'post_type' => array(
+										'type'    => 'string',
+										'default' => 'post',
+									),
+								),
+								$fields
+							),
+							'required'   => array( 'title' ),
+						),
+					),
+				),
+				'required'    => array( 'items' ),
+				'execute'     => array( self::class, 'bulk_create' ),
+				'permission'  => 'edit_posts',
+				'meta'        => Abilities::write_meta( Policy::CONTENT, array( 'draft_safe' => true ) ),
+			)
+		);
+
+		Abilities::add(
+			'bulk-update-posts',
+			array(
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Bulk update posts', 'viagent-production' ),
+				'description' => __( 'Updates up to 25 posts, pages or items in one call (same fields as update_post, each with its id), e.g. to change status, terms, custom fields or author of many items. Undo restores all of them.', 'viagent-production' ),
+				'input'       => array(
+					'items' => array(
+						'type'     => 'array',
+						'minItems' => 1,
+						'maxItems' => self::MAX_BULK,
+						'items'    => array(
+							'type'       => 'object',
+							'properties' => array_merge( array( 'id' => $id ), $fields ),
+							'required'   => array( 'id' ),
+						),
+					),
+				),
+				'required'    => array( 'items' ),
+				'execute'     => array( self::class, 'bulk_update' ),
+				'permission'  => 'edit_posts',
+				'meta'        => Abilities::write_meta( Policy::CONTENT, array( 'draft_safe' => true ) ),
+			)
+		);
+
+		Abilities::add(
+			'duplicate-post',
+			array(
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Duplicate post', 'viagent-production' ),
+				'description' => __( 'Copies a post, page or item — content, excerpt, custom fields (including page builder data), categories/terms, featured image, template and parent — into a new draft.', 'viagent-production' ),
+				'input'       => array(
+					'id'     => $id,
+					'title'  => array(
+						'type'        => 'string',
+						'description' => __( 'Title of the copy (defaults to the original title + " (copy)").', 'viagent-production' ),
+					),
+					'status' => array(
+						'type'    => 'string',
+						'enum'    => array( 'draft', 'pending', 'publish', 'private' ),
+						'default' => 'draft',
+					),
+				),
+				'required'    => array( 'id' ),
+				'execute'     => array( self::class, 'duplicate_post' ),
+				'permission'  => static function ( $input ) {
+					return self::can( 'edit_post', (int) ( $input['id'] ?? 0 ) );
+				},
+				'meta'        => Abilities::write_meta( Policy::CONTENT, array( 'draft_safe' => true ) ),
+			)
+		);
+
+		Abilities::add(
+			'replace-in-post',
+			array(
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Find and replace in post', 'viagent-production' ),
+				'description' => __( 'Finds text in the raw content (block markup) of a post, page or item and replaces it, without resending the whole content. Good for fixing a phrase, a link or a price in a long page. Use regex for patterns. Fails if nothing matches.', 'viagent-production' ),
+				'input'       => array(
+					'id'         => $id,
+					'find'       => array(
+						'type'      => 'string',
+						'minLength' => 1,
+					),
+					'replace'    => array( 'type' => 'string' ),
+					'regex'      => array(
+						'type'        => 'boolean',
+						'default'     => false,
+						'description' => __( 'Treat find as a PCRE pattern without delimiters; $1 in replace inserts a group.', 'viagent-production' ),
+					),
+					'limit'      => array(
+						'type'        => 'integer',
+						'minimum'     => 0,
+						'default'     => 0,
+						'description' => __( 'Maximum replacements; 0 replaces all.', 'viagent-production' ),
+					),
+					'in_title'   => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+					'in_excerpt' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+				'required'    => array( 'id', 'find', 'replace' ),
+				'execute'     => array( self::class, 'replace_in_post' ),
+				'permission'  => static function ( $input ) {
+					return self::can( 'edit_post', (int) ( $input['id'] ?? 0 ) );
+				},
+				'meta'        => Abilities::write_meta( Policy::CONTENT, array( 'draft_safe' => true ) ),
+			)
+		);
+	}
+
+	/**
+	 * Runs a callback for each bulk item and collects results and undo steps.
+	 *
+	 * @param array    $items    Items.
+	 * @param callable $callback Single-item callback.
+	 * @return array
+	 */
+	private static function run_bulk( array $items, callable $callback ) {
+		$saved  = array();
+		$failed = array();
+		$undo   = array();
+		foreach ( array_slice( $items, 0, self::MAX_BULK ) as $index => $item ) {
+			$result = call_user_func( $callback, (array) $item );
+			$step   = Activity_Log::take_undo();
+			if ( is_wp_error( $result ) ) {
+				$failed[] = array(
+					'index'   => $index,
+					'title'   => $item['title'] ?? null,
+					'id'      => $item['id'] ?? null,
+					'message' => $result->get_error_message(),
+				);
+				continue;
+			}
+			if ( $step ) {
+				$undo[] = $step;
+			}
+			$saved[] = $result;
+		}
+		if ( $undo ) {
+			Activity_Log::set_undo(
+				array(
+					'action' => 'batch',
+					'items'  => $undo,
+				)
+			);
+		}
+		Activity_Log::set_object( 'post', (int) ( $saved[0]['id'] ?? 0 ) );
+		return array(
+			'saved'  => $saved,
+			'failed' => $failed,
+		);
+	}
+
+	/**
+	 * Creates many posts.
+	 *
+	 * @param array $input Input.
+	 * @return array
+	 */
+	public static function bulk_create( $input ) {
+		return self::run_bulk(
+			(array) $input['items'],
+			static function ( $item ) {
+				$type = get_post_type_object( $item['post_type'] ?? 'post' );
+				if ( $type && ! current_user_can( $type->cap->create_posts ) ) {
+					return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to create this type of content.', 'viagent-production' ) );
+				}
+				return self::create_post( $item );
+			}
+		);
+	}
+
+	/**
+	 * Updates many posts.
+	 *
+	 * @param array $input Input.
+	 * @return array
+	 */
+	public static function bulk_update( $input ) {
+		return self::run_bulk(
+			(array) $input['items'],
+			static function ( $item ) {
+				if ( ! current_user_can( 'edit_post', (int) ( $item['id'] ?? 0 ) ) ) {
+					return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to edit this item.', 'viagent-production' ) );
+				}
+				return self::update_post( $item );
+			}
+		);
+	}
+
+	/**
+	 * Duplicates a post.
+	 *
+	 * @param array $input Input.
+	 * @return array|WP_Error
+	 */
+	public static function duplicate_post( $input ) {
+		$source = self::find( (int) $input['id'] );
+		if ( is_wp_error( $source ) ) {
+			return $source;
+		}
+		$type   = get_post_type_object( $source->post_type );
+		$status = $input['status'] ?? 'draft';
+		if ( ! current_user_can( $type->cap->create_posts ) ) {
+			return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to create this type of content.', 'viagent-production' ) );
+		}
+		$allowed = self::check_status( $status, $type );
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
+		$id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_type'      => $source->post_type,
+					'post_title'     => $input['title'] ?? $source->post_title . ' ' . __( '(copy)', 'viagent-production' ),
+					'post_content'   => $source->post_content,
+					'post_excerpt'   => $source->post_excerpt,
+					'post_status'    => $status,
+					'post_parent'    => $source->post_parent,
+					'menu_order'     => $source->menu_order,
+					'comment_status' => $source->comment_status,
+					'ping_status'    => $source->ping_status,
+					'post_password'  => $source->post_password,
+					'post_author'    => get_current_user_id(),
+				)
+			),
+			true
+		);
+		if ( is_wp_error( $id ) ) {
+			return $id;
+		}
+
+		// Only copy custom fields this connection could set itself, and only
+		// terms of taxonomies it may assign.
+		$copy = get_post( $id );
+		$skip = array_merge( Meta::INTERNAL_KEYS, array( '_wp_old_slug' ) );
+		foreach ( get_post_meta( $source->ID ) as $key => $values ) {
+			if ( in_array( $key, $skip, true ) || ! Meta::is_allowed_key( $copy, (string) $key ) ) {
+				continue;
+			}
+			foreach ( $values as $value ) {
+				add_post_meta( $id, $key, wp_slash( maybe_unserialize( $value ) ) );
+			}
+		}
+		foreach ( get_object_taxonomies( $source->post_type, 'objects' ) as $taxonomy ) {
+			if ( ! current_user_can( $taxonomy->cap->assign_terms ) ) {
+				continue;
+			}
+			$terms = wp_get_object_terms( $source->ID, $taxonomy->name, array( 'fields' => 'ids' ) );
+			if ( ! is_wp_error( $terms ) && $terms ) {
+				wp_set_object_terms( $id, $terms, $taxonomy->name );
+			}
+		}
+
+		Activity_Log::set_object( 'post', $id );
+		Activity_Log::set_undo(
+			array(
+				'action'  => 'trash_post',
+				'post_id' => $id,
+			)
+		);
+		return array_merge( self::saved_response( get_post( $id ) ), array( 'copied_from' => $source->ID ) );
+	}
+
+	/**
+	 * Finds and replaces text in a post.
+	 *
+	 * @param array $input Input.
+	 * @return array|WP_Error
+	 */
+	public static function replace_in_post( $input ) {
+		$post = self::find( (int) $input['id'] );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		$editable = Policy::check_post_editable( $post );
+		if ( is_wp_error( $editable ) ) {
+			return $editable;
+		}
+
+		$limit = (int) ( $input['limit'] ?? 0 );
+		$regex = ! empty( $input['regex'] );
+		if ( $regex && strlen( $input['find'] ) > self::MAX_REGEX_LENGTH ) {
+			/* translators: %d: maximum pattern length */
+			return new WP_Error( 'viagent_production_invalid_regex', sprintf( __( 'find is too long for a regular expression (maximum %d characters). Use a shorter pattern, or a plain-text search.', 'viagent-production' ), self::MAX_REGEX_LENGTH ) );
+		}
+		$pattern = $regex ? '~' . str_replace( '~', '\\~', $input['find'] ) . '~u' : '~' . preg_quote( $input['find'], '~' ) . '~u';
+		if ( $regex && false === @preg_match( $pattern, '' ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- testing whether the pattern compiles.
+			return new WP_Error( 'viagent_production_invalid_regex', __( 'find is not a valid regular expression.', 'viagent-production' ) );
+		}
+		$replace = $regex ? $input['replace'] : str_replace( array( '\\', '$' ), array( '\\\\', '\\$' ), $input['replace'] );
+
+		$fields = array( 'post_content' );
+		if ( ! empty( $input['in_title'] ) ) {
+			$fields[] = 'post_title';
+		}
+		if ( ! empty( $input['in_excerpt'] ) ) {
+			$fields[] = 'post_excerpt';
+		}
+
+		$data  = array( 'ID' => $post->ID );
+		$total = 0;
+		foreach ( $fields as $field ) {
+			$count    = 0;
+			$replaced = preg_replace( $pattern, $replace, $post->$field, $limit > 0 ? $limit - $total : -1, $count );
+			if ( null === $replaced || PREG_NO_ERROR !== preg_last_error() ) {
+				// A failed match (e.g. backtracking limit) must never save an empty field.
+				/* translators: %s: PCRE error message */
+				return new WP_Error( 'viagent_production_invalid_regex', sprintf( __( 'The regular expression could not be run against this content (%s). Nothing changed. Use a simpler pattern.', 'viagent-production' ), preg_last_error_msg() ) );
+			}
+			$data[ $field ] = $replaced;
+			$total         += $count;
+		}
+		if ( 0 === $total ) {
+			return new WP_Error( 'viagent_production_no_match', __( 'The text was not found, so nothing changed. Read the content with get_post to check the exact markup.', 'viagent-production' ) );
+		}
+
+		Activity_Log::set_object( 'post', $post->ID );
+		Activity_Log::set_undo( self::snapshot( $post ) );
+		$result = wp_update_post( wp_slash( $data ), true );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return array_merge( self::saved_response( get_post( $post->ID ) ), array( 'replacements' => $total ) );
+	}
+
+	/**
 	 * Input schema for editable post fields shared by create and update.
 	 *
 	 * @return array
@@ -293,7 +699,13 @@ class Content {
 			'title'             => array( 'type' => 'string' ),
 			'content'           => array(
 				'type'        => 'string',
-				'description' => __( 'Block markup.', 'viagent-production' ),
+				'description' => __( 'Content as block markup, HTML or Markdown (see content_format).', 'viagent-production' ),
+			),
+			'content_format'    => array(
+				'type'        => 'string',
+				'enum'        => Content_Format::FORMATS,
+				'default'     => 'auto',
+				'description' => __( '"auto" (default) detects it: block markup is kept, HTML and Markdown are converted to core blocks (headings, paragraphs, lists, quotes, code, images; tables and embeds become HTML blocks). Post types without the block editor keep HTML.', 'viagent-production' ),
 			),
 			'excerpt'           => array( 'type' => 'string' ),
 			'status'            => array(
@@ -332,6 +744,33 @@ class Content {
 				'type'        => 'integer',
 				'minimum'     => 0,
 				'description' => __( 'Media library ID; 0 removes the featured image.', 'viagent-production' ),
+			),
+			'meta'              => array(
+				'type'                 => 'object',
+				'description'          => __( 'Custom fields to set, e.g. {"price": "19.99", "event_date": "2026-05-01"}. null deletes a field. Fields private to plugins (starting with "_") need the Full control level.', 'viagent-production' ),
+				'additionalProperties' => true,
+			),
+			'author'            => array(
+				'type'        => 'integer',
+				'minimum'     => 1,
+				'description' => __( 'Author user ID (see list_users).', 'viagent-production' ),
+			),
+			'password'          => array(
+				'type'        => 'string',
+				'description' => __( 'Password-protects the item; empty string removes the password.', 'viagent-production' ),
+			),
+			'sticky'            => array(
+				'type'        => 'boolean',
+				'description' => __( 'Pin a post to the top of the blog (posts only).', 'viagent-production' ),
+			),
+			'format'            => array(
+				'type'        => 'string',
+				'enum'        => array( 'standard', 'aside', 'chat', 'gallery', 'link', 'image', 'quote', 'status', 'video', 'audio' ),
+				'description' => __( 'Post format, when the theme supports it.', 'viagent-production' ),
+			),
+			'ping_status'       => array(
+				'type' => 'string',
+				'enum' => array( 'open', 'closed' ),
 			),
 		);
 	}
@@ -383,6 +822,9 @@ class Content {
 			'menu_order'     => 'menu_order',
 			'template'       => 'page_template',
 			'comment_status' => 'comment_status',
+			'ping_status'    => 'ping_status',
+			'password'       => 'post_password',
+			'author'         => 'post_author',
 		);
 		$data = array();
 		foreach ( $map as $from => $to ) {
@@ -413,6 +855,30 @@ class Content {
 			}
 		}
 
+		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
+			$result = Meta::set_values( $post, $input['meta'] );
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+		if ( isset( $input['sticky'] ) ) {
+			if ( 'post' !== $post->post_type ) {
+				return new WP_Error( 'viagent_production_unsupported_field', __( 'Only posts can be sticky.', 'viagent-production' ) );
+			}
+			// Sticky posts are pinned on the site's front page, so like core's REST API this
+			// needs the right to edit others' posts, not just this one.
+			if ( ! current_user_can( get_post_type_object( $post->post_type )->cap->edit_others_posts ) ) {
+				return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to make posts sticky. The rest of the changes were saved.', 'viagent-production' ) );
+			}
+			$input['sticky'] ? stick_post( $post->ID ) : unstick_post( $post->ID );
+		}
+		if ( isset( $input['format'] ) ) {
+			if ( ! post_type_supports( $post->post_type, 'post-formats' ) ) {
+				return new WP_Error( 'viagent_production_unsupported_field', __( 'This content type does not support post formats.', 'viagent-production' ) );
+			}
+			set_post_format( $post, 'standard' === $input['format'] ? '' : $input['format'] );
+		}
+
 		if ( isset( $input['featured_image_id'] ) ) {
 			$image_id = (int) $input['featured_image_id'];
 			if ( 0 === $image_id ) {
@@ -424,6 +890,53 @@ class Content {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Converts content to the right format and checks author changes.
+	 *
+	 * @param array         $input Input (content is replaced by the prepared version).
+	 * @param \WP_Post_Type $type  Post type.
+	 * @param int           $current_author Current author ID (0 for new posts).
+	 * @return array|WP_Error Input, or an error.
+	 */
+	private static function prepare_input( array $input, $type, $current_author = 0 ) {
+		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
+			$stub = new WP_Post( (object) array( 'post_type' => $type->name ) );
+			foreach ( array_keys( $input['meta'] ) as $key ) {
+				if ( ! Meta::is_allowed_key( $stub, (string) $key ) ) {
+					/* translators: %s: meta key */
+					return new WP_Error( 'viagent_production_protected_meta', sprintf( __( 'The custom field "%s" is private to a plugin. It can only be changed with the Full control level. Nothing was saved.', 'viagent-production' ), $key ) );
+				}
+			}
+		}
+		if ( isset( $input['content'] ) ) {
+			$input['content'] = Content_Format::prepare( $input['content'], $input['content_format'] ?? 'auto', use_block_editor_for_post_type( $type->name ) );
+		}
+		$owner = $current_author ? $current_author : get_current_user_id();
+		if ( isset( $input['author'] ) && $owner !== (int) $input['author'] ) {
+			$author = get_userdata( (int) $input['author'] );
+			if ( ! $author ) {
+				return new WP_Error( 'viagent_production_invalid_user', __( 'author must be the ID of an existing user.', 'viagent-production' ) );
+			}
+			if ( ! current_user_can( $type->cap->edit_others_posts ) ) {
+				return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to give content to another author.', 'viagent-production' ) );
+			}
+		}
+		return $input;
+	}
+
+	/**
+	 * Warnings about block markup problems in saved content.
+	 *
+	 * @param WP_Post $post Post.
+	 * @return string[]
+	 */
+	public static function content_warnings( WP_Post $post ) {
+		if ( ! use_block_editor_for_post_type( $post->post_type ) || false === strpos( $post->post_content, '<!-- wp:' ) ) {
+			return array();
+		}
+		return array_column( Content_Format::validate( $post->post_content ), 'message' );
 	}
 
 	/**
@@ -444,13 +957,15 @@ class Content {
 		if ( is_wp_error( $allowed ) ) {
 			return $allowed;
 		}
+		$input = self::prepare_input( $input, $types[ $post_type ] );
+		if ( is_wp_error( $input ) ) {
+			return $input;
+		}
 
 		$data = array_merge(
+			array( 'post_author' => get_current_user_id() ),
 			self::post_data( $input ),
-			array(
-				'post_type'   => $post_type,
-				'post_author' => get_current_user_id(),
-			)
+			array( 'post_type' => $post_type )
 		);
 
 		$id = wp_insert_post( wp_slash( $data ), true );
@@ -495,8 +1010,13 @@ class Content {
 			}
 		}
 
+		$input = self::prepare_input( $input, get_post_type_object( $post->post_type ), (int) $post->post_author );
+		if ( is_wp_error( $input ) ) {
+			return $input;
+		}
+
 		$data = self::post_data( $input );
-		if ( empty( $data ) && ! isset( $input['terms'] ) && ! isset( $input['featured_image_id'] ) ) {
+		if ( empty( $data ) && ! array_intersect( array( 'terms', 'featured_image_id', 'meta', 'sticky', 'format' ), array_keys( $input ) ) ) {
 			return new WP_Error( 'viagent_production_nothing_to_update', __( 'Pass at least one field to change.', 'viagent-production' ) );
 		}
 
@@ -524,7 +1044,7 @@ class Content {
 	 * @param array   $input Change being made (decides which relations to snapshot).
 	 * @return array
 	 */
-	private static function snapshot( WP_Post $post, array $input = array() ) {
+	public static function snapshot( WP_Post $post, array $input = array() ) {
 		$undo = array(
 			'action'  => 'restore_post_fields',
 			'post_id' => $post->ID,
@@ -537,6 +1057,9 @@ class Content {
 				'post_parent'    => $post->post_parent,
 				'menu_order'     => $post->menu_order,
 				'comment_status' => $post->comment_status,
+				'ping_status'    => $post->ping_status,
+				'post_password'  => $post->post_password,
+				'post_author'    => $post->post_author,
 				'post_date'      => $post->post_date,
 				'post_date_gmt'  => $post->post_date_gmt,
 				'edit_date'      => true,
@@ -553,6 +1076,19 @@ class Content {
 		if ( isset( $input['featured_image_id'] ) ) {
 			$undo['thumbnail_id'] = (int) get_post_thumbnail_id( $post );
 		}
+		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
+			$undo['meta'] = array();
+			foreach ( array_keys( $input['meta'] ) as $key ) {
+				$undo['meta'][ $key ] = metadata_exists( 'post', $post->ID, $key ) ? get_post_meta( $post->ID, $key, true ) : null;
+			}
+		}
+		if ( isset( $input['sticky'] ) ) {
+			$undo['sticky'] = is_sticky( $post->ID );
+		}
+		if ( isset( $input['format'] ) ) {
+			$format         = get_post_format( $post );
+			$undo['format'] = $format ? $format : '';
+		}
 
 		return $undo;
 	}
@@ -564,13 +1100,17 @@ class Content {
 	 * @param true|WP_Error $relation Result of applying terms/featured image.
 	 * @return array
 	 */
-	private static function saved_response( WP_Post $post, $relation ) {
+	public static function saved_response( WP_Post $post, $relation = true ) {
 		$response = self::summary( $post );
 		if ( 'publish' !== $post->post_status ) {
 			$response['preview_link'] = get_preview_post_link( $post );
 		}
 		if ( is_wp_error( $relation ) ) {
 			$response['warning'] = $relation->get_error_message();
+		}
+		$warnings = self::content_warnings( $post );
+		if ( $warnings ) {
+			$response['content_warnings'] = $warnings;
 		}
 		return $response;
 	}
@@ -639,7 +1179,21 @@ class Content {
 		if ( 'trash' !== $post->post_status ) {
 			return new WP_Error( 'viagent_production_not_trashed', __( 'This item is not in the trash.', 'viagent-production' ) );
 		}
-		if ( ! wp_untrash_post( $post->ID ) ) {
+
+		// In draft-only mode a restored item always comes back as a draft, even on
+		// sites that restore the previous (possibly published) status.
+		$draft_only = Policy::is_draft_only();
+		$as_draft   = static function () {
+			return 'draft';
+		};
+		if ( $draft_only ) {
+			add_filter( 'wp_untrash_post_status', $as_draft, PHP_INT_MAX );
+		}
+		$restored = wp_untrash_post( $post->ID );
+		if ( $draft_only ) {
+			remove_filter( 'wp_untrash_post_status', $as_draft, PHP_INT_MAX );
+		}
+		if ( ! $restored ) {
 			return new WP_Error( 'viagent_production_restore_failed', __( 'Could not restore the item.', 'viagent-production' ) );
 		}
 
@@ -714,7 +1268,7 @@ class Content {
 	 */
 	public static function post_types() {
 		$types = get_post_types( array( 'show_ui' => true ), 'objects' );
-		unset( $types['attachment'], $types['wp_block'], $types['wp_template'], $types['wp_template_part'], $types['wp_navigation'], $types['wp_font_family'], $types['wp_font_face'], $types['wp_global_styles'] );
+		unset( $types['attachment'], $types['wp_template'], $types['wp_template_part'], $types['wp_navigation'], $types['wp_font_family'], $types['wp_font_face'], $types['wp_global_styles'] );
 
 		/**
 		 * Filters post types exposed to AI agents.
@@ -850,14 +1404,99 @@ class Content {
 		if ( ! empty( $input['tag'] ) ) {
 			$args['tag'] = sanitize_title( $input['tag'] );
 		}
+		if ( ! empty( $input['taxonomy'] ) && ! empty( $input['terms'] ) ) {
+			if ( ! taxonomy_exists( $input['taxonomy'] ) ) {
+				/* translators: %s: taxonomy */
+				return new WP_Error( 'viagent_production_invalid_taxonomy', sprintf( __( 'Unknown taxonomy "%s". See list_taxonomies.', 'viagent-production' ), $input['taxonomy'] ) );
+			}
+			$numeric           = array_filter( (array) $input['terms'], 'is_numeric' ) === (array) $input['terms'];
+			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- filtering is what was asked for.
+				array(
+					'taxonomy' => $input['taxonomy'],
+					'field'    => $numeric ? 'term_id' : 'slug',
+					'terms'    => $numeric ? array_map( 'intval', $input['terms'] ) : array_map( 'sanitize_title', $input['terms'] ),
+				),
+			);
+		}
+		if ( ! empty( $input['meta_key'] ) ) {
+			$post_stub = new WP_Post( (object) array( 'post_type' => $post_type ) );
+			if ( ! Meta::is_allowed_key( $post_stub, $input['meta_key'] ) ) {
+				return new WP_Error( 'viagent_production_protected_meta', __( 'This custom field is private to a plugin and cannot be used.', 'viagent-production' ) );
+			}
+			$clause = array(
+				'key'     => $input['meta_key'],
+				'compare' => $input['meta_compare'] ?? '=',
+			);
+			if ( isset( $input['meta_value'] ) && ! in_array( $clause['compare'], array( 'EXISTS', 'NOT EXISTS' ), true ) ) {
+				$clause['value'] = $input['meta_value'];
+				if ( is_numeric( $input['meta_value'] ) && in_array( $clause['compare'], array( '>', '>=', '<', '<=' ), true ) ) {
+					$clause['type'] = 'NUMERIC';
+				}
+			}
+			$args['meta_query'] = array( $clause ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- filtering is what was asked for.
+			if ( in_array( $args['orderby'], array( 'meta_value', 'meta_value_num' ), true ) ) {
+				$args['meta_key'] = $input['meta_key']; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering by the field that was asked for.
+			}
+		}
+		if ( isset( $input['parent'] ) ) {
+			$args['post_parent'] = (int) $input['parent'];
+		}
+		if ( ! empty( $input['include'] ) ) {
+			$args['post__in'] = array_map( 'intval', $input['include'] );
+		}
+		if ( ! empty( $input['date_after'] ) || ! empty( $input['date_before'] ) ) {
+			$args['date_query'] = array(
+				array_filter(
+					array(
+						'after'     => $input['date_after'] ?? null,
+						'before'    => $input['date_before'] ?? null,
+						'inclusive' => true,
+					)
+				),
+			);
+		}
+
+		// Unpublished items of other authors are only visible to users who may edit
+		// others' posts; WP_Query's "readable" permission only covers private ones.
+		// With "any" the query stays open (so others' published items still show) and the
+		// per-item can_read() filter below hides the rest.
+		$type = get_post_type_object( $post_type );
+		if ( 'any' !== $status && array_diff( (array) $args['post_status'], array( 'publish' ) ) && ! current_user_can( $type->cap->edit_others_posts ) ) {
+			if ( ! empty( $args['author'] ) && get_current_user_id() !== (int) $args['author'] ) {
+				return new WP_Error( 'viagent_production_forbidden_status', __( 'You are not allowed to list unpublished items of other authors.', 'viagent-production' ) );
+			}
+			$args['author'] = get_current_user_id();
+		}
 
 		$query = new \WP_Query( $args );
+		$full  = ! empty( $input['with_content'] );
+		$posts = array_values(
+			array_filter(
+				$query->posts,
+				static function ( $post ) {
+					return self::can_read( $post->ID );
+				}
+			)
+		);
 
 		return array(
 			'total'       => (int) $query->found_posts,
 			'total_pages' => (int) $query->max_num_pages,
 			'page'        => $args['paged'],
-			'items'       => array_map( array( self::class, 'summary' ), $query->posts ),
+			'items'       => array_map(
+				static function ( $post ) use ( $full ) {
+					if ( ! $full ) {
+						return self::summary( $post );
+					}
+					return self::get_post(
+						array(
+							'id'           => $post->ID,
+							'include_meta' => true,
+						)
+					);
+				},
+				$posts
+			),
 		);
 	}
 
@@ -871,6 +1510,9 @@ class Content {
 		$post = self::find( (int) $input['id'] );
 		if ( is_wp_error( $post ) ) {
 			return $post;
+		}
+		if ( ! self::can_read( $post->ID ) ) {
+			return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to read this item.', 'viagent-production' ) );
 		}
 
 		$terms = array();
@@ -894,8 +1536,16 @@ class Content {
 		}
 
 		$thumbnail_id = (int) get_post_thumbnail_id( $post );
+		$extra        = array();
+		if ( ! empty( $input['include_meta'] ) && current_user_can( 'edit_post', $post->ID ) ) {
+			$extra['meta'] = Meta::get_values( $post );
+		}
+		$warnings = self::content_warnings( $post );
+		if ( $warnings ) {
+			$extra['content_warnings'] = $warnings;
+		}
 
-		return array_merge(
+		$result = array_merge(
 			self::summary( $post ),
 			array(
 				'content'        => $post->post_content,
@@ -909,8 +1559,18 @@ class Content {
 					'id'  => $thumbnail_id,
 					'url' => wp_get_attachment_url( $thumbnail_id ),
 				) : null,
-			)
+				'author_id'      => (int) $post->post_author,
+				'sticky'         => 'post' === $post->post_type ? is_sticky( $post->ID ) : null,
+				'format'         => post_type_supports( $post->post_type, 'post-formats' ) ? ( get_post_format( $post ) ? get_post_format( $post ) : 'standard' ) : null,
+				'has_password'   => '' !== $post->post_password,
+				'block_editor'   => use_block_editor_for_post_type( $post->post_type ),
+			),
+			$extra
 		);
+		if ( current_user_can( 'edit_post', $post->ID ) && '' !== $post->post_password ) {
+			$result['password'] = $post->post_password;
+		}
+		return $result;
 	}
 
 	/**
