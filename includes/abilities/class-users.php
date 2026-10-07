@@ -2,12 +2,12 @@
 /**
  * User abilities. Read-only: accounts and roles are managed by people in WordPress.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Security\Policy;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_User;
 
@@ -25,9 +25,9 @@ class Users {
 		Abilities::add(
 			'list-users',
 			array(
-				'category'    => 'viagent-users',
-				'label'       => __( 'List users', 'viagent' ),
-				'description' => __( 'Lists user accounts with their roles. Filter by role or search by name/email.', 'viagent' ),
+				'category'    => 'viagent-production-users',
+				'label'       => __( 'List users', 'viagent-production' ),
+				'description' => __( 'Lists user accounts with their roles. Filter by role or search by name/email.', 'viagent-production' ),
 				'input'       => array_merge(
 					array(
 						'role'   => array( 'type' => 'string' ),
@@ -44,9 +44,9 @@ class Users {
 		Abilities::add(
 			'get-user',
 			array(
-				'category'    => 'viagent-users',
-				'label'       => __( 'Get user', 'viagent' ),
-				'description' => __( 'Gets one user account by ID.', 'viagent' ),
+				'category'    => 'viagent-production-users',
+				'label'       => __( 'Get user', 'viagent-production' ),
+				'description' => __( 'Gets one user account by ID.', 'viagent-production' ),
 				'input'       => array(
 					'id' => array(
 						'type'    => 'integer',
@@ -117,6 +117,6 @@ class Users {
 	 */
 	public static function get_user( $input ) {
 		$user = get_userdata( (int) $input['id'] );
-		return $user ? self::item( $user ) : new WP_Error( 'viagent_not_found', __( 'No user found with that ID.', 'viagent' ) );
+		return $user ? self::item( $user ) : new WP_Error( 'viagent_production_not_found', __( 'No user found with that ID.', 'viagent-production' ) );
 	}
 }

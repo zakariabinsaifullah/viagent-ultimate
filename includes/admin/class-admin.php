@@ -1,14 +1,14 @@
 <?php
 /**
- * The Viagent admin page: menu, assets, first-run redirect and admin bar status.
+ * The Viagent Production admin page: menu, assets, first-run redirect and admin bar status.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Admin;
+namespace ViagentProduction\Admin;
 
-use Viagent\MCP\Transport;
-use Viagent\Security\Policy;
+use ViagentProduction\MCP\Transport;
+use ViagentProduction\Security\Policy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,8 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Admin {
 
-	const SLUG            = 'viagent';
-	const REDIRECT_OPTION = 'viagent_activation_redirect';
+	const SLUG            = 'viagent-production';
+	const REDIRECT_OPTION = 'viagent_production_activation_redirect';
 
 	/**
 	 * Hook suffix of the admin page (tools_page_viagent).
@@ -35,7 +35,7 @@ class Admin {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ) );
 		add_action( 'admin_init', array( self::class, 'maybe_redirect' ) );
 		add_action( 'admin_bar_menu', array( self::class, 'admin_bar' ), 100 );
-		add_filter( 'plugin_action_links_' . plugin_basename( VIAGENT_FILE ), array( self::class, 'action_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( VIAGENT_PRODUCTION_FILE ), array( self::class, 'action_links' ) );
 	}
 
 	/**
@@ -53,8 +53,8 @@ class Admin {
 	 */
 	public static function add_menu() {
 		self::$hook_suffix = (string) add_management_page(
-			__( 'Viagent', 'viagent' ),
-			__( 'Viagent', 'viagent' ),
+			__( 'Viagent Production', 'viagent-production' ),
+			__( 'Viagent Production', 'viagent-production' ),
 			'manage_options',
 			self::SLUG,
 			array( self::class, 'render' )
@@ -65,7 +65,7 @@ class Admin {
 	 * Renders the React root.
 	 */
 	public static function render() {
-		echo '<div class="wrap viagent-wrap"><div id="viagent-root"><p class="viagent-loading">' . esc_html__( 'Loading…', 'viagent' ) . '</p></div></div>';
+		echo '<div class="wrap viagent-production-wrap"><div id="viagent-production-root"><p class="viagent-production-loading">' . esc_html__( 'Loading…', 'viagent-production' ) . '</p></div></div>';
 	}
 
 	/**
@@ -78,20 +78,20 @@ class Admin {
 			return;
 		}
 
-		$asset_file = VIAGENT_DIR . 'build/index.asset.php';
+		$asset_file = VIAGENT_PRODUCTION_DIR . 'build/index.asset.php';
 		if ( ! file_exists( $asset_file ) ) {
 			return;
 		}
 		$asset = require $asset_file;
 
-		wp_enqueue_script( 'viagent-admin', VIAGENT_URL . 'build/index.js', $asset['dependencies'], $asset['version'], true );
-		wp_enqueue_style( 'viagent-admin', VIAGENT_URL . 'build/index.css', array( 'wp-components' ), $asset['version'] );
-		wp_style_add_data( 'viagent-admin', 'rtl', 'replace' );
-		wp_set_script_translations( 'viagent-admin', 'viagent' );
+		wp_enqueue_script( 'viagent-production-admin', VIAGENT_PRODUCTION_URL . 'build/index.js', $asset['dependencies'], $asset['version'], true );
+		wp_enqueue_style( 'viagent-production-admin', VIAGENT_PRODUCTION_URL . 'build/index.css', array( 'wp-components' ), $asset['version'] );
+		wp_style_add_data( 'viagent-production-admin', 'rtl', 'replace' );
+		wp_set_script_translations( 'viagent-production-admin', 'viagent-production' );
 
 		wp_add_inline_script(
-			'viagent-admin',
-			'window.viagentSettings = ' . wp_json_encode( self::settings() ) . ';',
+			'viagent-production-admin',
+			'window.viagentProductionSettings = ' . wp_json_encode( self::settings() ) . ';',
 			'before'
 		);
 	}
@@ -102,7 +102,7 @@ class Admin {
 	 * @return array
 	 */
 	private static function settings() {
-		$clients = require VIAGENT_DIR . 'includes/clients/catalog.php';
+		$clients = require VIAGENT_PRODUCTION_DIR . 'includes/clients/catalog.php';
 		foreach ( $clients as $slug => $client ) {
 			$clients[ $slug ]['slug'] = $slug;
 			if ( isset( $client['verify'] ) ) {
@@ -112,12 +112,12 @@ class Admin {
 
 		return array(
 			'endpoint'   => Transport::endpoint_url(),
-			'probeUrl'   => rest_url( 'viagent/v1/probe' ),
+			'probeUrl'   => rest_url( 'viagent-production/v1/probe' ),
 			'serverName' => self::server_name(),
 			'siteName'   => get_bloginfo( 'name' ),
 			'siteUrl'    => home_url( '/' ),
 			'isLocal'    => Health::is_local(),
-			'oauth'      => \Viagent\Auth\OAuth\OAuth::enabled(),
+			'oauth'      => \ViagentProduction\Auth\OAuth\OAuth::enabled(),
 			'user'       => wp_get_current_user()->display_name,
 			'levels'     => Policy::level_labels(),
 			'clients'    => array_values( $clients ),
@@ -163,10 +163,10 @@ class Admin {
 		}
 		$bar->add_node(
 			array(
-				'id'    => 'viagent-paused',
-				'title' => esc_html__( 'AI access paused', 'viagent' ),
+				'id'    => 'viagent-production-paused',
+				'title' => esc_html__( 'AI access paused', 'viagent-production' ),
 				'href'  => self::url( 'settings' ),
-				'meta'  => array( 'title' => esc_attr__( 'AI apps cannot connect. Click to resume.', 'viagent' ) ),
+				'meta'  => array( 'title' => esc_attr__( 'AI apps cannot connect. Click to resume.', 'viagent-production' ) ),
 			)
 		);
 	}
@@ -178,7 +178,7 @@ class Admin {
 	 * @return array
 	 */
 	public static function action_links( $links ) {
-		array_unshift( $links, '<a href="' . esc_url( self::url() ) . '">' . esc_html__( 'Settings', 'viagent' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( self::url() ) . '">' . esc_html__( 'Settings', 'viagent-production' ) . '</a>' );
 		return $links;
 	}
 }

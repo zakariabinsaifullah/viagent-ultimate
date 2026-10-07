@@ -2,12 +2,12 @@
 /**
  * Site abilities: site overview and cross-type search.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Auth\Authenticator;
+use ViagentProduction\Auth\Authenticator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,11 +21,11 @@ class Site {
 	 */
 	public static function register() {
 		wp_register_ability(
-			'viagent/get-site-info',
+			'viagent-production/get-site-info',
 			array(
-				'label'               => __( 'Get site info', 'viagent' ),
-				'description'         => __( 'Overview of the WordPress site: name, URLs, language, timezone, active theme, available post types and who you are connected as. Call this first.', 'viagent' ),
-				'category'            => 'viagent-site',
+				'label'               => __( 'Get site info', 'viagent-production' ),
+				'description'         => __( 'Overview of the WordPress site: name, URLs, language, timezone, active theme, available post types and who you are connected as. Call this first.', 'viagent-production' ),
+				'category'            => 'viagent-production-site',
 				'input_schema'        => array(),
 				'execute_callback'    => array( self::class, 'get_site_info' ),
 				'permission_callback' => static function () {
@@ -36,18 +36,18 @@ class Site {
 		);
 
 		wp_register_ability(
-			'viagent/search-content',
+			'viagent-production/search-content',
 			array(
-				'label'               => __( 'Search content', 'viagent' ),
-				'description'         => __( 'Full-text search across published posts, pages and other public content. Returns matching items with ID, type, title and link. To find drafts, use list_posts with search.', 'viagent' ),
-				'category'            => 'viagent-site',
+				'label'               => __( 'Search content', 'viagent-production' ),
+				'description'         => __( 'Full-text search across published posts, pages and other public content. Returns matching items with ID, type, title and link. To find drafts, use list_posts with search.', 'viagent-production' ),
+				'category'            => 'viagent-production-site',
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => array(
 						'query'    => array(
 							'type'        => 'string',
 							'minLength'   => 1,
-							'description' => __( 'Words to search for.', 'viagent' ),
+							'description' => __( 'Words to search for.', 'viagent-production' ),
 						),
 						'per_page' => array(
 							'type'    => 'integer',

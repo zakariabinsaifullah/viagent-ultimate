@@ -2,10 +2,10 @@
 /**
  * Block abilities: discover block types and patterns to build layouts with.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
 use WP_Error;
 
@@ -23,14 +23,14 @@ class Blocks {
 		Abilities::add(
 			'list-block-types',
 			array(
-				'category'    => 'viagent-blocks',
-				'label'       => __( 'List block types', 'viagent' ),
-				'description' => __( 'Lists blocks available on this site (core and from plugins) that can be used in content markup.', 'viagent' ),
+				'category'    => 'viagent-production-blocks',
+				'label'       => __( 'List block types', 'viagent-production' ),
+				'description' => __( 'Lists blocks available on this site (core and from plugins) that can be used in content markup.', 'viagent-production' ),
 				'input'       => array(
 					'search'   => array( 'type' => 'string' ),
 					'category' => array(
 						'type'        => 'string',
-						'description' => __( 'e.g. "text", "media", "design", "widgets", "theme", "embed".', 'viagent' ),
+						'description' => __( 'e.g. "text", "media", "design", "widgets", "theme", "embed".', 'viagent-production' ),
 					),
 				),
 				'execute'     => array( self::class, 'list_block_types' ),
@@ -42,9 +42,9 @@ class Blocks {
 		Abilities::add(
 			'list-patterns',
 			array(
-				'category'    => 'viagent-blocks',
-				'label'       => __( 'List patterns', 'viagent' ),
-				'description' => __( 'Lists ready-made block patterns (theme, plugin and saved patterns) such as heroes, pricing tables or footers. Use get_pattern to fetch the markup and insert it into content.', 'viagent' ),
+				'category'    => 'viagent-production-blocks',
+				'label'       => __( 'List patterns', 'viagent-production' ),
+				'description' => __( 'Lists ready-made block patterns (theme, plugin and saved patterns) such as heroes, pricing tables or footers. Use get_pattern to fetch the markup and insert it into content.', 'viagent-production' ),
 				'input'       => array(
 					'search'   => array( 'type' => 'string' ),
 					'category' => array( 'type' => 'string' ),
@@ -58,9 +58,9 @@ class Blocks {
 		Abilities::add(
 			'get-pattern',
 			array(
-				'category'    => 'viagent-blocks',
-				'label'       => __( 'Get pattern', 'viagent' ),
-				'description' => __( 'Gets the block markup of a pattern by name (from list_patterns). Saved patterns use the name "saved/<id>".', 'viagent' ),
+				'category'    => 'viagent-production-blocks',
+				'label'       => __( 'Get pattern', 'viagent-production' ),
+				'description' => __( 'Gets the block markup of a pattern by name (from list_patterns). Saved patterns use the name "saved/<id>".', 'viagent-production' ),
 				'input'       => array( 'name' => array( 'type' => 'string' ) ),
 				'required'    => array( 'name' ),
 				'execute'     => array( self::class, 'get_pattern' ),
@@ -152,7 +152,7 @@ class Blocks {
 				$result[] = array(
 					'name'        => 'saved/' . $saved->ID,
 					'title'       => $saved->post_title,
-					'description' => __( 'Saved pattern. Insert as <!-- wp:block {"ref":ID} /--> to keep it synced.', 'viagent' ),
+					'description' => __( 'Saved pattern. Insert as <!-- wp:block {"ref":ID} /--> to keep it synced.', 'viagent-production' ),
 					'categories'  => array( 'saved' ),
 				);
 			}
@@ -173,7 +173,7 @@ class Blocks {
 		if ( 0 === strpos( $name, 'saved/' ) ) {
 			$saved = get_post( (int) substr( $name, 6 ) );
 			if ( ! $saved || 'wp_block' !== $saved->post_type || ! current_user_can( 'read_post', $saved->ID ) ) {
-				return new WP_Error( 'viagent_not_found', __( 'No saved pattern found with that name.', 'viagent' ) );
+				return new WP_Error( 'viagent_production_not_found', __( 'No saved pattern found with that name.', 'viagent-production' ) );
 			}
 			return array(
 				'name'         => $name,
@@ -185,7 +185,7 @@ class Blocks {
 
 		$pattern = \WP_Block_Patterns_Registry::get_instance()->get_registered( $name );
 		if ( ! $pattern ) {
-			return new WP_Error( 'viagent_not_found', __( 'No pattern found with that name. Use list_patterns.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No pattern found with that name. Use list_patterns.', 'viagent-production' ) );
 		}
 		return array(
 			'name'    => $pattern['name'],

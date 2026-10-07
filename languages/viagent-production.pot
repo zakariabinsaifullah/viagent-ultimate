@@ -1,9 +1,9 @@
-# Copyright (C) 2026 Viagent
+# Copyright (C) 2026 Viagent Production
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Viagent 1.0.2\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/viagent\n"
+"Project-Id-Version: Viagent Production 1.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/viagent-production\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,19 +12,19 @@ msgstr ""
 "POT-Creation-Date: 2026-10-06T05:15:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: viagent\n"
+"X-Domain: viagent-production\n"
 
 #. Plugin Name of the plugin
 #. Author of the plugin
-#: viagent.php
+#: viagent-production.php
 #: includes/admin/class-admin.php:56
 #: includes/admin/class-admin.php:57
 #: src/admin/index.js:76
-msgid "Viagent"
+msgid "Viagent Production"
 msgstr ""
 
 #. Description of the plugin
-#: viagent.php
+#: viagent-production.php
 msgid "Connect your WordPress site to AI agents like Claude, ChatGPT, Cursor, Codex and more using the Model Context Protocol (MCP) — in a few clicks."
 msgstr ""
 
@@ -503,7 +503,7 @@ msgid "image_id is not an image in the media library."
 msgstr ""
 
 #: includes/abilities/class-media.php:451
-msgid "Deleting media is permanent and is turned off on this site. Ask the site owner to allow permanent deletion in Viagent."
+msgid "Deleting media is permanent and is turned off on this site. Ask the site owner to allow permanent deletion in Viagent Production."
 msgstr ""
 
 #: includes/abilities/class-media.php:456
@@ -1140,7 +1140,7 @@ msgid "AI access to this site is paused by the site owner."
 msgstr ""
 
 #: includes/auth/class-authenticator.php:64
-msgid "Missing or invalid Viagent key. Create a connection in WordPress under Viagent."
+msgid "Missing or invalid Viagent Production key. Create a connection in WordPress under Viagent Production."
 msgstr ""
 
 #: includes/auth/class-authenticator.php:176
@@ -1156,7 +1156,7 @@ msgid "The app sent an unexpected return address, so the request was stopped for
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:129
-msgid "AI access to this site is paused. Resume it in Viagent → Settings, then try again."
+msgid "AI access to this site is paused. Resume it in Viagent Production → Settings, then try again."
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:164
@@ -1191,7 +1191,7 @@ msgid "What may it do?"
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:252
-msgid "The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent."
+msgid "The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent Production."
 msgstr ""
 
 #: includes/auth/oauth/class-authorize.php:261
@@ -1934,7 +1934,7 @@ msgid "The order no longer exists or you cannot edit it."
 msgstr ""
 
 #: includes/integrations/class-woocommerce.php:1113
-msgid "Status restored from Viagent activity."
+msgid "Status restored from Viagent Production activity."
 msgstr ""
 
 #: includes/integrations/class-woocommerce.php:1130
@@ -2181,21 +2181,21 @@ msgid "Content editor"
 msgstr ""
 
 #: includes/security/class-policy.php:291
-msgid "Draft-only mode is on, so the status can only be \"draft\" or \"pending\". Ask the site owner to publish it from WordPress, or to allow publishing in Viagent."
+msgid "Draft-only mode is on, so the status can only be \"draft\" or \"pending\". Ask the site owner to publish it from WordPress, or to allow publishing in Viagent Production."
 msgstr ""
 
 #. translators: %s: post status
 #: includes/security/class-policy.php:309
 #, php-format
-msgid "Draft-only mode is on and this item is \"%s\", so it cannot be changed. Create a new draft instead, or ask the site owner for more access in Viagent."
+msgid "Draft-only mode is on and this item is \"%s\", so it cannot be changed. Create a new draft instead, or ask the site owner for more access in Viagent Production."
 msgstr ""
 
 #: includes/security/class-policy.php:371
 msgid "Too many requests. Please wait a minute and try again."
 msgstr ""
 
-#: viagent.php:31
-msgid "Viagent needs WordPress 6.9 or newer. Please update WordPress to connect your site to AI agents."
+#: viagent-production.php:31
+msgid "Viagent Production needs WordPress 6.9 or newer. Please update WordPress to connect your site to AI agents."
 msgstr ""
 
 #: src/admin/components.js:48
@@ -2245,7 +2245,7 @@ msgid "Resume"
 msgstr ""
 
 #: src/admin/index.js:104
-msgid "Viagent sections"
+msgid "Viagent Production sections"
 msgstr ""
 
 #: src/admin/screens/activity.js:49
@@ -2631,7 +2631,7 @@ msgid "Header"
 msgstr ""
 
 #: src/admin/screens/connect.js:741
-msgid "If your server strips the Authorization header, send the key as “X-VIAGENT-Key” instead."
+msgid "If your server strips the Authorization header, send the key as “X-Viagent Production-Production-Key” instead."
 msgstr ""
 
 #. translators: %s: app name
@@ -2881,7 +2881,7 @@ msgid "The connection URL answered with an unexpected status (%d)."
 msgstr ""
 
 #: src/admin/screens/settings.js:66
-msgid "A security plugin, firewall or cache may be blocking /wp-json/. Allow requests to /wp-json/viagent/."
+msgid "A security plugin, firewall or cache may be blocking /wp-json/. Allow requests to /wp-json/viagent-production/."
 msgstr ""
 
 #: src/admin/screens/settings.js:76
@@ -2902,7 +2902,7 @@ msgid "Your server passes the key header through to WordPress."
 msgstr ""
 
 #: src/admin/screens/settings.js:108
-msgid "Your server removes the \"Authorization\" header, so apps sending the key that way are rejected. Apps can send it as \"X-VIAGENT-Key\" instead."
+msgid "Your server removes the \"Authorization\" header, so apps sending the key that way are rejected. Apps can send it as \"X-Viagent Production-Production-Key\" instead."
 msgstr ""
 
 #: src/admin/screens/settings.js:112
@@ -2962,7 +2962,7 @@ msgid "Shows AI apps 3 tools that look up the others, instead of the full list. 
 msgstr ""
 
 #: src/admin/screens/settings.js:300
-msgid "Delete all Viagent data when the plugin is deleted"
+msgid "Delete all Viagent Production data when the plugin is deleted"
 msgstr ""
 
 #: src/admin/screens/settings.js:304

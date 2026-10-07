@@ -1,5 +1,5 @@
 {
-	"name": "viagent",
+	"name": "viagent-production",
 	"version": "1.0.2",
 	"private": true,
 	"description": "Connect your WordPress site to AI agents with MCP.",
@@ -23,7 +23,7 @@
 		"includes",
 		"languages",
 		"src",
-		"viagent.php",
+		"viagent-production.php",
 		"uninstall.php",
 		"readme.txt",
 		"package.json"

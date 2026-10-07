@@ -1,15 +1,15 @@
 <?php
 /**
- * WP-CLI commands for managing Viagent connections.
+ * WP-CLI commands for managing Viagent Production connections.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\CLI;
+namespace ViagentProduction\CLI;
 
-use Viagent\Auth\API_Keys;
-use Viagent\Log\Activity_Log;
-use Viagent\MCP\Transport;
+use ViagentProduction\Auth\API_Keys;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\MCP\Transport;
 use WP_CLI;
 
 defined( 'ABSPATH' ) || exit;
@@ -45,7 +45,7 @@ class CLI {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp viagent key-create --as=admin --level=content --name="Claude Code"
+	 *     wp viagent-production key-create --as=admin --level=content --name="Claude Code"
 	 *
 	 * @subcommand key-create
 	 *
@@ -172,7 +172,7 @@ class CLI {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp viagent activity-revert 42 --user=admin
+	 *     wp viagent-production activity-revert 42 --user=admin
 	 *
 	 * @subcommand activity-revert
 	 *

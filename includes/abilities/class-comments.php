@@ -2,13 +2,13 @@
 /**
  * Comment abilities: list, reply and moderate.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Comment;
 use WP_Error;
 
@@ -31,9 +31,9 @@ class Comments {
 		Abilities::add(
 			'list-comments',
 			array(
-				'category'    => 'viagent-comments',
-				'label'       => __( 'List comments', 'viagent' ),
-				'description' => __( 'Lists comments, newest first. Filter by post and status ("hold" = waiting for approval).', 'viagent' ),
+				'category'    => 'viagent-production-comments',
+				'label'       => __( 'List comments', 'viagent-production' ),
+				'description' => __( 'Lists comments, newest first. Filter by post and status ("hold" = waiting for approval).', 'viagent-production' ),
 				'input'       => array_merge(
 					array(
 						'post_id' => array(
@@ -58,9 +58,9 @@ class Comments {
 		Abilities::add(
 			'reply-to-comment',
 			array(
-				'category'    => 'viagent-comments',
-				'label'       => __( 'Reply to comment', 'viagent' ),
-				'description' => __( 'Publishes a reply to a comment as the connected user. The reply is public immediately.', 'viagent' ),
+				'category'    => 'viagent-production-comments',
+				'label'       => __( 'Reply to comment', 'viagent-production' ),
+				'description' => __( 'Publishes a reply to a comment as the connected user. The reply is public immediately.', 'viagent-production' ),
 				'input'       => array(
 					'comment_id' => $id,
 					'content'    => array(
@@ -78,9 +78,9 @@ class Comments {
 		Abilities::add(
 			'moderate-comment',
 			array(
-				'category'    => 'viagent-comments',
-				'label'       => __( 'Moderate comment', 'viagent' ),
-				'description' => __( 'Approves, unapproves, marks as spam or trashes a comment.', 'viagent' ),
+				'category'    => 'viagent-production-comments',
+				'label'       => __( 'Moderate comment', 'viagent-production' ),
+				'description' => __( 'Approves, unapproves, marks as spam or trashes a comment.', 'viagent-production' ),
 				'input'       => array(
 					'comment_id' => $id,
 					'action'     => array(
@@ -166,7 +166,7 @@ class Comments {
 	public static function reply( $input ) {
 		$parent = get_comment( (int) $input['comment_id'] );
 		if ( ! $parent ) {
-			return new WP_Error( 'viagent_not_found', __( 'No comment found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No comment found with that ID.', 'viagent-production' ) );
 		}
 
 		$user = wp_get_current_user();
@@ -185,7 +185,7 @@ class Comments {
 			)
 		);
 		if ( ! $id ) {
-			return new WP_Error( 'viagent_comment_failed', __( 'Could not save the reply.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_comment_failed', __( 'Could not save the reply.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'comment', $id );
@@ -201,7 +201,7 @@ class Comments {
 	public static function moderate( $input ) {
 		$comment = get_comment( (int) $input['comment_id'] );
 		if ( ! $comment ) {
-			return new WP_Error( 'viagent_not_found', __( 'No comment found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No comment found with that ID.', 'viagent-production' ) );
 		}
 
 		$status = array(

@@ -2,32 +2,32 @@
 /**
  * OAuth 2.1 core: URLs, clients, authorization codes and tokens.
  *
- * Viagent is both the authorization server and the resource server. Clients
+ * Viagent Production is both the authorization server and the resource server. Clients
  * register dynamically (RFC 7591), users approve on a consent screen, and
  * tokens are opaque random strings stored only as hashes.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Auth\OAuth;
+namespace ViagentProduction\Auth\OAuth;
 
-use Viagent\Installer;
-use Viagent\MCP\Transport;
-use Viagent\Security\Policy;
+use ViagentProduction\Installer;
+use ViagentProduction\MCP\Transport;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent Production's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
 
 /**
  * OAuth core.
  */
 class OAuth {
 
-	const ACCESS_PREFIX  = 'viagent_at_';
-	const REFRESH_PREFIX = 'viagent_rt_';
-	const CLIENT_PREFIX  = 'viagent_c_';
+	const ACCESS_PREFIX  = 'viagent_production_at_';
+	const REFRESH_PREFIX = 'viagent_production_rt_';
+	const CLIENT_PREFIX  = 'viagent_production_c_';
 
 	const ACCESS_TTL  = HOUR_IN_SECONDS;
 	const REFRESH_TTL = 30 * DAY_IN_SECONDS;
@@ -44,7 +44,7 @@ class OAuth {
 		 *
 		 * @param bool $enabled Default true.
 		 */
-		return (bool) apply_filters( 'viagent_oauth_enabled', true );
+		return (bool) apply_filters( 'viagent_production_oauth_enabled', true );
 	}
 
 	/**
@@ -62,7 +62,7 @@ class OAuth {
 	 * @return string
 	 */
 	public static function authorization_endpoint() {
-		return add_query_arg( 'action', 'viagent_authorize', wp_login_url() );
+		return add_query_arg( 'action', 'viagent_production_authorize', wp_login_url() );
 	}
 
 	/**
@@ -71,7 +71,7 @@ class OAuth {
 	 * @return string
 	 */
 	public static function resource_metadata_url() {
-		return rest_url( 'viagent/v1/oauth/protected-resource' );
+		return rest_url( 'viagent-production/v1/oauth/protected-resource' );
 	}
 
 	/**
@@ -83,9 +83,9 @@ class OAuth {
 		return array(
 			'issuer'                                     => self::issuer(),
 			'authorization_endpoint'                     => self::authorization_endpoint(),
-			'token_endpoint'                             => rest_url( 'viagent/v1/oauth/token' ),
-			'registration_endpoint'                      => rest_url( 'viagent/v1/oauth/register' ),
-			'revocation_endpoint'                        => rest_url( 'viagent/v1/oauth/revoke' ),
+			'token_endpoint'                             => rest_url( 'viagent-production/v1/oauth/token' ),
+			'registration_endpoint'                      => rest_url( 'viagent-production/v1/oauth/register' ),
+			'revocation_endpoint'                        => rest_url( 'viagent-production/v1/oauth/revoke' ),
 			'response_types_supported'                   => array( 'code' ),
 			'grant_types_supported'                      => array( 'authorization_code', 'refresh_token' ),
 			'code_challenge_methods_supported'           => array( 'S256' ),
@@ -94,7 +94,7 @@ class OAuth {
 			'scopes_supported'                           => array( 'mcp' ),
 			'client_id_metadata_document_supported'      => true,
 			'authorization_response_iss_parameter_supported' => true,
-			'service_documentation'                      => \Viagent\Admin\Admin::url(),
+			'service_documentation'                      => \ViagentProduction\Admin\Admin::url(),
 		);
 	}
 
@@ -190,7 +190,7 @@ class OAuth {
 
 		$client = array(
 			'client_id'     => self::CLIENT_PREFIX . self::random( 24 ),
-			'client_name'   => mb_substr( sanitize_text_field( $name ? $name : __( 'AI app', 'viagent' ) ), 0, 100 ),
+			'client_name'   => mb_substr( sanitize_text_field( $name ? $name : __( 'AI app', 'viagent-production' ) ), 0, 100 ),
 			'redirect_uris' => wp_json_encode( array_values( $redirect_uris ) ),
 			'created_at'    => current_time( 'mysql', true ),
 		);
@@ -251,7 +251,7 @@ class OAuth {
 	private static function get_metadata_client( $client_id ) {
 		global $wpdb;
 
-		$cache_key = 'viagent_cimd_' . md5( $client_id );
+		$cache_key = 'viagent_production_cimd_' . md5( $client_id );
 		$document  = get_transient( $cache_key );
 
 		if ( ! is_array( $document ) ) {
@@ -331,7 +331,7 @@ class OAuth {
 	 */
 	public static function issue_code( array $grant ) {
 		$code = self::random( 40 );
-		set_transient( 'viagent_code_' . self::hash( $code ), $grant, self::CODE_TTL );
+		set_transient( 'viagent_production_code_' . self::hash( $code ), $grant, self::CODE_TTL );
 		return $code;
 	}
 
@@ -342,7 +342,7 @@ class OAuth {
 	 * @return array|null Grant.
 	 */
 	public static function consume_code( $code ) {
-		$key   = 'viagent_code_' . self::hash( (string) $code );
+		$key   = 'viagent_production_code_' . self::hash( (string) $code );
 		$grant = get_transient( $key );
 		delete_transient( $key );
 		return is_array( $grant ) ? $grant : null;
@@ -549,32 +549,32 @@ class OAuth {
 			'read' => array(
 				'level'       => Policy::READ,
 				'draft_only'  => true,
-				'label'       => __( 'Read only', 'viagent' ),
-				'description' => __( 'Look at posts, pages, media and settings. Cannot change anything.', 'viagent' ),
+				'label'       => __( 'Read only', 'viagent-production' ),
+				'description' => __( 'Look at posts, pages, media and settings. Cannot change anything.', 'viagent-production' ),
 			),
 		);
 		if ( current_user_can( 'edit_posts' ) ) {
 			$options['drafts'] = array(
 				'level'       => Policy::CONTENT,
 				'draft_only'  => true,
-				'label'       => __( 'Write drafts', 'viagent' ),
-				'description' => __( 'Create and edit drafts and upload media. You review and publish.', 'viagent' ),
+				'label'       => __( 'Write drafts', 'viagent-production' ),
+				'description' => __( 'Create and edit drafts and upload media. You review and publish.', 'viagent-production' ),
 			);
 		}
 		if ( current_user_can( 'publish_posts' ) ) {
 			$options['publish'] = array(
 				'level'       => Policy::CONTENT,
 				'draft_only'  => false,
-				'label'       => __( 'Write and publish', 'viagent' ),
-				'description' => __( 'Publish, edit and trash content, and moderate comments.', 'viagent' ),
+				'label'       => __( 'Write and publish', 'viagent-production' ),
+				'description' => __( 'Publish, edit and trash content, and moderate comments.', 'viagent-production' ),
 			);
 		}
 		if ( current_user_can( 'manage_options' ) ) {
 			$options['admin'] = array(
 				'level'       => Policy::ADMIN,
 				'draft_only'  => false,
-				'label'       => __( 'Site manager', 'viagent' ),
-				'description' => __( 'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.', 'viagent' ),
+				'label'       => __( 'Site manager', 'viagent-production' ),
+				'description' => __( 'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.', 'viagent-production' ),
 			);
 		}
 		return $options;

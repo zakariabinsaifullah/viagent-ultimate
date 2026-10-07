@@ -17,13 +17,13 @@ import { update } from '@wordpress/icons';
 import { api } from '../api';
 import { Badge, CopyField, ScreenHeader } from '../components';
 
-const settings = window.viagentSettings;
+const settings = window.viagentProductionSettings;
 
 const STATUS_LABELS = {
-	good: __( 'OK', 'viagent' ),
-	info: __( 'Note', 'viagent' ),
-	warning: __( 'Check', 'viagent' ),
-	critical: __( 'Problem', 'viagent' ),
+	good: __( 'OK', 'viagent-production' ),
+	info: __( 'Note', 'viagent-production' ),
+	warning: __( 'Check', 'viagent-production' ),
+	critical: __( 'Problem', 'viagent-production' ),
 };
 
 /**
@@ -47,39 +47,39 @@ async function browserChecks() {
 		results.push( {
 			id: 'endpoint',
 			status: ok ? 'good' : 'critical',
-			label: __( 'Connection URL', 'viagent' ),
+			label: __( 'Connection URL', 'viagent-production' ),
 			message: ok
 				? __(
 						'The connection URL is online and requires a key.',
-						'viagent'
+						'viagent-production'
 					)
 				: sprintf(
 						/* translators: %d: HTTP status code */
 						__(
 							'The connection URL answered with an unexpected status (%d).',
-							'viagent'
+							'viagent-production'
 						),
 						response.status
 					),
 			fix: ok
 				? ''
 				: __(
-						'A security plugin, firewall or cache may be blocking /wp-json/. Allow requests to /wp-json/viagent/.',
-						'viagent'
+						'A security plugin, firewall or cache may be blocking /wp-json/. Allow requests to /wp-json/viagent-production/.',
+						'viagent-production'
 					),
 		} );
 	} catch {
 		results.push( {
 			id: 'endpoint',
 			status: 'critical',
-			label: __( 'Connection URL', 'viagent' ),
+			label: __( 'Connection URL', 'viagent-production' ),
 			message: __(
 				'The connection URL could not be reached.',
-				'viagent'
+				'viagent-production'
 			),
 			fix: __(
 				'Check that the REST API is not disabled by a security plugin or firewall.',
-				'viagent'
+				'viagent-production'
 			),
 		} );
 		return results;
@@ -87,7 +87,7 @@ async function browserChecks() {
 
 	try {
 		const response = await request( settings.probeUrl, {
-			headers: { Authorization: 'Bearer viagent-probe' },
+			headers: { Authorization: 'Bearer viagent-production-probe' },
 		} );
 		const body = await response.json();
 		results.push(
@@ -95,23 +95,23 @@ async function browserChecks() {
 				? {
 						id: 'auth_header',
 						status: 'good',
-						label: __( 'Key header', 'viagent' ),
+						label: __( 'Key header', 'viagent-production' ),
 						message: __(
 							'Your server passes the key header through to WordPress.',
-							'viagent'
+							'viagent-production'
 						),
 					}
 				: {
 						id: 'auth_header',
 						status: 'warning',
-						label: __( 'Key header', 'viagent' ),
+						label: __( 'Key header', 'viagent-production' ),
 						message: __(
-							'Your server removes the "Authorization" header, so apps sending the key that way are rejected. Apps can send it as "X-VIAGENT-Key" instead.',
-							'viagent'
+							'Your server removes the "Authorization" header, so apps sending the key that way are rejected. Apps can send it as "X-Viagent Production-Production-Key" instead.',
+							'viagent-production'
 						),
 						fix: __(
 							'Add this line to .htaccess above "# BEGIN WordPress": SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1',
-							'viagent'
+							'viagent-production'
 						),
 					}
 		);
@@ -146,7 +146,7 @@ function HealthChecks() {
 	return (
 		<Card>
 			<CardHeader>
-				<h3>{ __( 'Connection check', 'viagent' ) }</h3>
+				<h3>{ __( 'Connection check', 'viagent-production' ) }</h3>
 				<Button
 					variant="secondary"
 					size="compact"
@@ -154,7 +154,7 @@ function HealthChecks() {
 					onClick={ run }
 					disabled={ ! health }
 				>
-					{ __( 'Run again', 'viagent' ) }
+					{ __( 'Run again', 'viagent-production' ) }
 				</Button>
 			</CardHeader>
 			<CardBody>
@@ -165,24 +165,24 @@ function HealthChecks() {
 				) }
 				{ ! health && ! error && <Spinner /> }
 				{ health && (
-					<ul className="viagent-health">
+					<ul className="viagent-production-health">
 						{ health.checks.map( ( check ) => (
 							<li
 								key={ check.id }
 								className={ `is-${ check.status }` }
 							>
-								<span className="viagent-health__status">
+								<span className="viagent-production-health__status">
 									{ STATUS_LABELS[ check.status ] }
 								</span>
 								<div>
 									<strong>{ check.label }</strong>
 									<p>{ check.message }</p>
 									{ check.fix && (
-										<p className="viagent-health__fix">
+										<p className="viagent-production-health__fix">
 											<strong>
 												{ __(
 													'How to fix:',
-													'viagent'
+													'viagent-production'
 												) }
 											</strong>{ ' ' }
 											{ check.fix }
@@ -212,10 +212,10 @@ export default function Settings( { state, onStateChange } ) {
 	return (
 		<>
 			<ScreenHeader
-				title={ __( 'Settings', 'viagent' ) }
+				title={ __( 'Settings', 'viagent-production' ) }
 				description={ __(
 					'Safety switches that apply to every connected AI app.',
-					'viagent'
+					'viagent-production'
 				) }
 			/>
 
@@ -225,24 +225,24 @@ export default function Settings( { state, onStateChange } ) {
 				</Notice>
 			) }
 
-			<div className="viagent-settings">
+			<div className="viagent-production-settings">
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Safety', 'viagent' ) }</h3>
+						<h3>{ __( 'Safety', 'viagent-production' ) }</h3>
 					</CardHeader>
-					<CardBody className="viagent-settings__toggles">
+					<CardBody className="viagent-production-settings__toggles">
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={ __( 'Pause all AI access', 'viagent' ) }
+							label={ __( 'Pause all AI access', 'viagent-production' ) }
 							help={ __(
 								'Instantly blocks every connected app. Turn it off to resume — connections are kept.',
-								'viagent'
+								'viagent-production'
 							) }
 							checked={ Boolean( state?.paused ) }
 							onChange={ ( paused ) => save( { paused } ) }
 						/>
 						<div
-							className={ `viagent-danger-toggle ${
+							className={ `viagent-production-danger-toggle ${
 								state?.allow_permanent_delete ? 'is-on' : ''
 							}` }
 						>
@@ -250,11 +250,11 @@ export default function Settings( { state, onStateChange } ) {
 								__nextHasNoMarginBottom
 								label={ __(
 									'Allow permanent deletion',
-									'viagent'
+									'viagent-production'
 								) }
 								help={ __(
 									'Off (recommended): deleted posts go to the trash and media cannot be deleted. On: AI apps with delete access can skip the trash and delete media — this cannot be undone.',
-									'viagent'
+									'viagent-production'
 								) }
 								checked={ Boolean(
 									state?.allow_permanent_delete
@@ -264,10 +264,10 @@ export default function Settings( { state, onStateChange } ) {
 								}
 							/>
 							{ state?.allow_permanent_delete && (
-								<p className="viagent-danger-toggle__warning">
+								<p className="viagent-production-danger-toggle__warning">
 									{ __(
 										'Permanent deletion is on. AI apps with delete access can remove things that cannot be undone.',
-										'viagent'
+										'viagent-production'
 									) }
 								</p>
 							) }
@@ -277,18 +277,18 @@ export default function Settings( { state, onStateChange } ) {
 
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Advanced', 'viagent' ) }</h3>
+						<h3>{ __( 'Advanced', 'viagent-production' ) }</h3>
 					</CardHeader>
-					<CardBody className="viagent-settings__toggles">
+					<CardBody className="viagent-production-settings__toggles">
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={ __(
 								'Compact tool list for all apps',
-								'viagent'
+								'viagent-production'
 							) }
 							help={ __(
 								'Shows AI apps 3 tools that look up the others, instead of the full list. Useful for apps or small models that struggle with many tools. Apps with a known tool limit, like Cursor, use this automatically when needed.',
-								'viagent'
+								'viagent-production'
 							) }
 							checked={ Boolean( state?.compact_mode ) }
 							onChange={ ( value ) =>
@@ -298,12 +298,12 @@ export default function Settings( { state, onStateChange } ) {
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={ __(
-								'Delete all Viagent data when the plugin is deleted',
-								'viagent'
+								'Delete all Viagent Production data when the plugin is deleted',
+								'viagent-production'
 							) }
 							help={ __(
 								'Removes connections, activity history and settings when you delete the plugin from the Plugins screen. Deactivating the plugin never deletes anything.',
-								'viagent'
+								'viagent-production'
 							) }
 							checked={ Boolean( state?.delete_data ) }
 							onChange={ ( value ) =>
@@ -315,20 +315,20 @@ export default function Settings( { state, onStateChange } ) {
 
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Connection details', 'viagent' ) }</h3>
+						<h3>{ __( 'Connection details', 'viagent-production' ) }</h3>
 					</CardHeader>
 					<CardBody>
 						<CopyField
 							label={ __(
 								'MCP server URL (Streamable HTTP)',
-								'viagent'
+								'viagent-production'
 							) }
 							value={ settings.endpoint }
 						/>
-						<p className="viagent-muted">
+						<p className="viagent-production-muted">
 							{ __(
 								'Apps authenticate with a connection key (Authorization: Bearer …), or with a WordPress Application Password.',
-								'viagent'
+								'viagent-production'
 							) }
 						</p>
 					</CardBody>
@@ -336,26 +336,26 @@ export default function Settings( { state, onStateChange } ) {
 
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Integrations', 'viagent' ) }</h3>
+						<h3>{ __( 'Integrations', 'viagent-production' ) }</h3>
 					</CardHeader>
 					<CardBody>
-						<p className="viagent-muted">
+						<p className="viagent-production-muted">
 							{ __(
 								'Extra tools appear automatically when these plugins are active. Manage them under Tools.',
-								'viagent'
+								'viagent-production'
 							) }
 						</p>
-						<ul className="viagent-integrations">
+						<ul className="viagent-production-integrations">
 							{ ( state?.integrations || [] ).map( ( item ) => (
 								<li key={ item.slug }>
 									<span>{ item.name }</span>
 									{ item.active ? (
 										<Badge tone="success">
-											{ __( 'Active', 'viagent' ) }
+											{ __( 'Active', 'viagent-production' ) }
 										</Badge>
 									) : (
 										<Badge>
-											{ __( 'Not active', 'viagent' ) }
+											{ __( 'Not active', 'viagent-production' ) }
 										</Badge>
 									) }
 								</li>

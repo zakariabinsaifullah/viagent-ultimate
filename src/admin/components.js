@@ -27,7 +27,7 @@ export function ClientMark( { client, size = 'large' } ) {
 
 	return (
 		<span
-			className={ `viagent-mark viagent-mark--${ size } ${
+			className={ `viagent-production-mark viagent-production-mark--${ size } ${
 				initials.length > 2 ? 'is-long' : ''
 			}` }
 			style={ { background: client?.color || '#646970' } }
@@ -45,7 +45,7 @@ export function ClientMark( { client, size = 'large' } ) {
  * @param {string} props.text  Text to copy.
  * @param {string} props.label Accessible label.
  */
-export function CopyButton( { text, label = __( 'Copy', 'viagent' ) } ) {
+export function CopyButton( { text, label = __( 'Copy', 'viagent-production' ) } ) {
 	const [ copied, setCopied ] = useState( false );
 	const ref = useCopyToClipboard( text, () => {
 		setCopied( true );
@@ -58,9 +58,9 @@ export function CopyButton( { text, label = __( 'Copy', 'viagent' ) } ) {
 			variant="secondary"
 			size="compact"
 			icon={ copied ? check : copy }
-			className="viagent-copy"
+			className="viagent-production-copy"
 		>
-			{ copied ? __( 'Copied', 'viagent' ) : label }
+			{ copied ? __( 'Copied', 'viagent-production' ) : label }
 		</Button>
 	);
 }
@@ -74,9 +74,9 @@ export function CopyButton( { text, label = __( 'Copy', 'viagent' ) } ) {
  */
 export function CodeBlock( { code, caption } ) {
 	return (
-		<div className="viagent-code">
-			<div className="viagent-code__bar">
-				<span className="viagent-code__caption">{ caption }</span>
+		<div className="viagent-production-code">
+			<div className="viagent-production-code__bar">
+				<span className="viagent-production-code__caption">{ caption }</span>
 				<CopyButton text={ code } />
 			</div>
 			<pre>
@@ -96,10 +96,10 @@ export function CodeBlock( { code, caption } ) {
  */
 export function CopyField( { label, value, secret = false } ) {
 	return (
-		<div className={ `viagent-field ${ secret ? 'is-secret' : '' }` }>
-			<span className="viagent-field__label">{ label }</span>
-			<div className="viagent-field__row">
-				<code className="viagent-field__value">{ value }</code>
+		<div className={ `viagent-production-field ${ secret ? 'is-secret' : '' }` }>
+			<span className="viagent-production-field__label">{ label }</span>
+			<div className="viagent-production-field__row">
+				<code className="viagent-production-field__value">{ value }</code>
 				<CopyButton text={ value } />
 			</div>
 		</div>
@@ -114,7 +114,7 @@ export function CopyField( { label, value, secret = false } ) {
  * @param {Element} props.children Content.
  */
 export function Badge( { tone = 'neutral', children } ) {
-	return <span className={ `viagent-badge is-${ tone }` }>{ children }</span>;
+	return <span className={ `viagent-production-badge is-${ tone }` }>{ children }</span>;
 }
 
 /**
@@ -127,13 +127,13 @@ export function Badge( { tone = 'neutral', children } ) {
  */
 export function ScreenHeader( { title, description, actions } ) {
 	return (
-		<div className="viagent-screen-header">
+		<div className="viagent-production-screen-header">
 			<div>
 				<h2>{ title }</h2>
 				{ description && <p>{ description }</p> }
 			</div>
 			{ actions && (
-				<div className="viagent-screen-header__actions">
+				<div className="viagent-production-screen-header__actions">
 					{ actions }
 				</div>
 			) }
@@ -159,10 +159,10 @@ export function levelTone( level ) {
  */
 export function clientFor( slug ) {
 	return (
-		window.viagentSettings.clients.find(
+		window.viagentProductionSettings.clients.find(
 			( client ) => client.slug === slug
 		) || {
-			name: slug || __( 'AI app', 'viagent' ),
+			name: slug || __( 'AI app', 'viagent-production' ),
 			mark: 'AI',
 		}
 	);

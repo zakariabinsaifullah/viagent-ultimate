@@ -18,7 +18,7 @@ import { api } from '../api';
 import { Badge, ClientMark, clientFor, humanizeTool } from '../components';
 
 function StatusDot( { tone } ) {
-	return <span className={ `viagent-dot is-${ tone }` } aria-hidden="true" />;
+	return <span className={ `viagent-production-dot is-${ tone }` } aria-hidden="true" />;
 }
 
 export default function Overview( { state, navigate, onStateChange } ) {
@@ -53,9 +53,9 @@ export default function Overview( { state, navigate, onStateChange } ) {
 			tone: 'warning',
 			text: __(
 				'AI access is paused. Connected apps can’t reach your site.',
-				'viagent'
+				'viagent-production'
 			),
-			action: __( 'Resume', 'viagent' ),
+			action: __( 'Resume', 'viagent-production' ),
 			onClick: async () =>
 				onStateChange( await api.updateSettings( { paused: false } ) ),
 		} );
@@ -65,10 +65,10 @@ export default function Overview( { state, navigate, onStateChange } ) {
 			tone: 'warning',
 			text: sprintf(
 				/* translators: %s: connection name */
-				__( '%s is set up but hasn’t connected yet.', 'viagent' ),
+				__( '%s is set up but hasn’t connected yet.', 'viagent-production' ),
 				connection.name
 			),
-			action: __( 'Show me how', 'viagent' ),
+			action: __( 'Show me how', 'viagent-production' ),
 			onClick: () => navigate( 'connect' ),
 		} )
 	);
@@ -82,7 +82,7 @@ export default function Overview( { state, navigate, onStateChange } ) {
 			attention.push( {
 				tone: check.status === 'critical' ? 'danger' : 'warning',
 				text: `${ check.label }: ${ check.message }`,
-				action: __( 'Fix it', 'viagent' ),
+				action: __( 'Fix it', 'viagent-production' ),
 				onClick: () => navigate( 'settings' ),
 			} )
 		);
@@ -91,15 +91,15 @@ export default function Overview( { state, navigate, onStateChange } ) {
 			tone: 'warning',
 			text: __(
 				'Permanent deletion is allowed — AI apps can delete things that can’t be undone.',
-				'viagent'
+				'viagent-production'
 			),
-			action: __( 'Review', 'viagent' ),
+			action: __( 'Review', 'viagent-production' ),
 			onClick: () => navigate( 'settings' ),
 		} );
 	}
 
 	const loading = connections === null;
-	let headline = __( 'No AI apps are connected yet', 'viagent' );
+	let headline = __( 'No AI apps are connected yet', 'viagent-production' );
 	if ( connected.length ) {
 		headline = sprintf(
 			/* translators: %d: number of connected apps */
@@ -107,28 +107,28 @@ export default function Overview( { state, navigate, onStateChange } ) {
 				'%d AI app is working on your site',
 				'%d AI apps are working on your site',
 				connected.length,
-				'viagent'
+				'viagent-production'
 			),
 			connected.length
 		);
 	}
 
 	return (
-		<div className="viagent-overview">
+		<div className="viagent-production-overview">
 			<section
-				className={ `viagent-hero ${ state?.paused ? 'is-paused' : '' }` }
+				className={ `viagent-production-hero ${ state?.paused ? 'is-paused' : '' }` }
 			>
-				<div className="viagent-hero__text">
-					<span className="viagent-hero__eyebrow">
+				<div className="viagent-production-hero__text">
+					<span className="viagent-production-hero__eyebrow">
 						<StatusDot
 							tone={ state?.paused ? 'warning' : 'success' }
 						/>
 						{ state?.paused
-							? __( 'Paused', 'viagent' )
-							: __( 'AI access on', 'viagent' ) }
+							? __( 'Paused', 'viagent-production' )
+							: __( 'AI access on', 'viagent-production' ) }
 					</span>
 					<h2>
-						{ loading ? __( 'Loading…', 'viagent' ) : headline }
+						{ loading ? __( 'Loading…', 'viagent-production' ) : headline }
 					</h2>
 					<p>
 						{ state?.last_activity
@@ -136,23 +136,23 @@ export default function Overview( { state, navigate, onStateChange } ) {
 									/* translators: %s: relative time */
 									__(
 										'Last activity %s. Every change is logged and can be undone.',
-										'viagent'
+										'viagent-production'
 									),
 									humanTimeDiff( state.last_activity )
 								)
 							: __(
 									'Connect Claude, ChatGPT, Cursor or another AI app in about a minute. Every change it makes is logged and can be undone.',
-									'viagent'
+									'viagent-production'
 								) }
 					</p>
 				</div>
-				<div className="viagent-hero__actions">
+				<div className="viagent-production-hero__actions">
 					<Button
 						variant="primary"
 						icon={ plus }
 						onClick={ () => navigate( 'connect' ) }
 					>
-						{ __( 'Connect an app', 'viagent' ) }
+						{ __( 'Connect an app', 'viagent-production' ) }
 					</Button>
 					<Button
 						variant="secondary"
@@ -165,22 +165,22 @@ export default function Overview( { state, navigate, onStateChange } ) {
 						}
 					>
 						{ state?.paused
-							? __( 'Resume AI access', 'viagent' )
-							: __( 'Pause AI access', 'viagent' ) }
+							? __( 'Resume AI access', 'viagent-production' )
+							: __( 'Pause AI access', 'viagent-production' ) }
 					</Button>
 				</div>
 			</section>
 
 			{ attention.length > 0 && (
-				<Card className="viagent-attention">
+				<Card className="viagent-production-attention">
 					<CardHeader>
-						<h3>{ __( 'Needs your attention', 'viagent' ) }</h3>
+						<h3>{ __( 'Needs your attention', 'viagent-production' ) }</h3>
 						<Badge tone="warning">{ attention.length }</Badge>
 					</CardHeader>
-					<CardBody className="viagent-attention__list">
+					<CardBody className="viagent-production-attention__list">
 						{ attention.map( ( item ) => (
 							<div
-								className="viagent-attention__item"
+								className="viagent-production-attention__item"
 								key={ item.text }
 							>
 								<StatusDot tone={ item.tone } />
@@ -198,29 +198,29 @@ export default function Overview( { state, navigate, onStateChange } ) {
 				</Card>
 			) }
 
-			<div className="viagent-overview__grid">
+			<div className="viagent-production-overview__grid">
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Connected apps', 'viagent' ) }</h3>
+						<h3>{ __( 'Connected apps', 'viagent-production' ) }</h3>
 						<Button
 							variant="link"
 							onClick={ () => navigate( 'connections' ) }
 						>
-							{ __( 'Manage', 'viagent' ) }
+							{ __( 'Manage', 'viagent-production' ) }
 						</Button>
 					</CardHeader>
-					<CardBody className="viagent-mini-list">
+					<CardBody className="viagent-production-mini-list">
 						{ loading && <Spinner /> }
 						{ ! loading && ! connections.length && (
-							<p className="viagent-muted">
-								{ __( 'Nothing connected yet.', 'viagent' ) }
+							<p className="viagent-production-muted">
+								{ __( 'Nothing connected yet.', 'viagent-production' ) }
 							</p>
 						) }
 						{ ( connections || [] )
 							.slice( 0, 5 )
 							.map( ( connection ) => (
 								<div
-									className="viagent-mini-list__row"
+									className="viagent-production-mini-list__row"
 									key={ `${ connection.type }-${ connection.id }` }
 								>
 									<ClientMark
@@ -229,15 +229,15 @@ export default function Overview( { state, navigate, onStateChange } ) {
 										) }
 										size="small"
 									/>
-									<div className="viagent-mini-list__main">
+									<div className="viagent-production-mini-list__main">
 										<strong>{ connection.name }</strong>
-										<span className="viagent-muted">
+										<span className="viagent-production-muted">
 											{ connection.last_used_at
 												? sprintf(
 														/* translators: %s: relative time */
 														__(
 															'Active %s',
-															'viagent'
+															'viagent-production'
 														),
 														humanTimeDiff(
 															connection.last_used_at
@@ -245,7 +245,7 @@ export default function Overview( { state, navigate, onStateChange } ) {
 													)
 												: __(
 														'Not connected yet',
-														'viagent'
+														'viagent-production'
 													) }
 										</span>
 									</div>
@@ -263,45 +263,45 @@ export default function Overview( { state, navigate, onStateChange } ) {
 
 				<Card>
 					<CardHeader>
-						<h3>{ __( 'Recent changes', 'viagent' ) }</h3>
+						<h3>{ __( 'Recent changes', 'viagent-production' ) }</h3>
 						<Button
 							variant="link"
 							onClick={ () => navigate( 'activity' ) }
 						>
-							{ __( 'View all', 'viagent' ) }
+							{ __( 'View all', 'viagent-production' ) }
 						</Button>
 					</CardHeader>
-					<CardBody className="viagent-mini-list">
+					<CardBody className="viagent-production-mini-list">
 						{ activity === null && <Spinner /> }
 						{ activity?.length === 0 && (
-							<p className="viagent-muted">
+							<p className="viagent-production-muted">
 								{ __(
 									'When an AI app changes something, it shows up here — with an Undo button.',
-									'viagent'
+									'viagent-production'
 								) }
 							</p>
 						) }
 						{ ( activity || [] ).map( ( item ) => (
 							<div
-								className="viagent-mini-list__row"
+								className="viagent-production-mini-list__row"
 								key={ item.id }
 							>
-								<div className="viagent-mini-list__main">
+								<div className="viagent-production-mini-list__main">
 									<strong>
 										{ humanizeTool( item.tool ) }
 										{ item.object && (
-											<span className="viagent-muted">
+											<span className="viagent-production-muted">
 												{ ' ' }
 												· { item.object.title }
 											</span>
 										) }
 									</strong>
-									<span className="viagent-muted">
+									<span className="viagent-production-muted">
 										{ item.connection }
 										{ item.agent
 											? ` (${ sprintf(
 													/* translators: %s: program name, e.g. curl */
-													__( 'via %s', 'viagent' ),
+													__( 'via %s', 'viagent-production' ),
 													item.agent
 												) })`
 											: '' }{ ' ' }
@@ -310,11 +310,11 @@ export default function Overview( { state, navigate, onStateChange } ) {
 								</div>
 								{ item.status !== 'ok' && (
 									<Badge tone="danger">
-										{ __( 'Failed', 'viagent' ) }
+										{ __( 'Failed', 'viagent-production' ) }
 									</Badge>
 								) }
 								{ item.reverted_at && (
-									<Badge>{ __( 'Undone', 'viagent' ) }</Badge>
+									<Badge>{ __( 'Undone', 'viagent-production' ) }</Badge>
 								) }
 							</div>
 						) ) }
@@ -329,13 +329,13 @@ export default function Overview( { state, navigate, onStateChange } ) {
 							<h3>
 								{ __(
 									'Ready-made tasks your AI can do',
-									'viagent'
+									'viagent-production'
 								) }
 							</h3>
-							<p className="viagent-muted">
+							<p className="viagent-production-muted">
 								{ __(
 									'Find them in your AI app’s “+” or / menu — or just ask in your own words.',
-									'viagent'
+									'viagent-production'
 								) }
 							</p>
 						</div>
@@ -345,12 +345,12 @@ export default function Overview( { state, navigate, onStateChange } ) {
 							iconPosition="right"
 							onClick={ () => navigate( 'tools' ) }
 						>
-							{ __( 'All tools', 'viagent' ) }
+							{ __( 'All tools', 'viagent-production' ) }
 						</Button>
 					</CardHeader>
-					<CardBody className="viagent-task-grid">
+					<CardBody className="viagent-production-task-grid">
 						{ prompts.map( ( prompt ) => (
-							<div className="viagent-task" key={ prompt.name }>
+							<div className="viagent-production-task" key={ prompt.name }>
 								<strong>{ prompt.title }</strong>
 								<span>{ prompt.description }</span>
 							</div>

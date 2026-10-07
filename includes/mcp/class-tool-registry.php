@@ -2,13 +2,13 @@
 /**
  * Maps WordPress abilities to MCP tools.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\MCP;
+namespace ViagentProduction\MCP;
 
-use Viagent\Auth\Connection;
-use Viagent\Security\Policy;
+use ViagentProduction\Auth\Connection;
+use ViagentProduction\Security\Policy;
 use WP_Ability;
 use WP_Error;
 
@@ -19,11 +19,11 @@ defined( 'ABSPATH' ) || exit;
  */
 class Tool_Registry {
 
-	const OWN_NAMESPACE = 'viagent/';
+	const OWN_NAMESPACE = 'viagent-production/';
 
 	/**
 	 * Converts an ability name to an MCP tool name.
-	 * "viagent/list-posts" → "list_posts"; "acme/do-thing" → "acme__do_thing".
+	 * "viagent-production/list-posts" → "list_posts"; "acme/do-thing" → "acme__do_thing".
 	 *
 	 * @param string $ability_name Ability name.
 	 * @return string
@@ -37,13 +37,13 @@ class Tool_Registry {
 
 	/**
 	 * Access level an ability requires. Read-only abilities default to "read",
-	 * everything else to "admin" unless the ability declares `meta.viagent.level`.
+	 * everything else to "admin" unless the ability declares `meta.viagent_production.level`.
 	 *
 	 * @param WP_Ability $ability Ability.
 	 * @return string
 	 */
 	public static function required_level( WP_Ability $ability ) {
-		$viagent = $ability->get_meta_item( 'viagent', array() );
+		$viagent = $ability->get_meta_item( 'viagent_production', array() );
 		if ( is_array( $viagent ) && ! empty( $viagent['level'] ) && Policy::is_valid_level( $viagent['level'] ) ) {
 			return $viagent['level'];
 		}
@@ -71,7 +71,7 @@ class Tool_Registry {
 				continue;
 			}
 			// Hide tools the connected user could never run (e.g. network tools for a site admin).
-			$viagent = (array) $ability->get_meta_item( 'viagent', array() );
+			$viagent = (array) $ability->get_meta_item( 'viagent_production', array() );
 			if ( ! empty( $viagent['capability'] ) && ! current_user_can( $viagent['capability'] ) ) {
 				continue;
 			}
@@ -84,11 +84,11 @@ class Tool_Registry {
 		 * @param array<string,WP_Ability> $tools      Tools keyed by MCP tool name.
 		 * @param Connection               $connection Connection.
 		 */
-		return apply_filters( 'viagent_tools', $tools, $connection );
+		return apply_filters( 'viagent_production_tools', $tools, $connection );
 	}
 
 	/**
-	 * Whether an ability comes from Viagent itself.
+	 * Whether an ability comes from Viagent Production itself.
 	 *
 	 * @param WP_Ability $ability Ability.
 	 * @return bool
@@ -98,7 +98,7 @@ class Tool_Registry {
 	}
 
 	/**
-	 * Whether an ability is exposed over MCP. Viagent's own abilities always are
+	 * Whether an ability is exposed over MCP. Viagent Production's own abilities always are
 	 * (subject to their switches); abilities from other plugins only after the
 	 * site owner switches them on under Tools.
 	 *
@@ -119,7 +119,7 @@ class Tool_Registry {
 		 * @param bool       $exposed Whether the ability is exposed.
 		 * @param WP_Ability $ability Ability.
 		 */
-		return (bool) apply_filters( 'viagent_ability_exposed', $exposed, $ability );
+		return (bool) apply_filters( 'viagent_production_ability_exposed', $exposed, $ability );
 	}
 
 	/**

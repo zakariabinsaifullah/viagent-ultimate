@@ -3,13 +3,13 @@
  * Settings abilities. Only an allowlist of safe options can be changed;
  * site URLs, admin email, registration and role settings are never writable.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,15 +28,15 @@ class Settings {
 		$settings = array(
 			'blogname'               => array(
 				'type'        => 'string',
-				'description' => __( 'Site title.', 'viagent' ),
+				'description' => __( 'Site title.', 'viagent-production' ),
 			),
 			'blogdescription'        => array(
 				'type'        => 'string',
-				'description' => __( 'Tagline.', 'viagent' ),
+				'description' => __( 'Tagline.', 'viagent-production' ),
 			),
 			'timezone_string'        => array(
 				'type'        => 'string',
-				'description' => __( 'e.g. "Europe/London".', 'viagent' ),
+				'description' => __( 'e.g. "Europe/London".', 'viagent-production' ),
 			),
 			'date_format'            => array( 'type' => 'string' ),
 			'time_format'            => array( 'type' => 'string' ),
@@ -53,17 +53,17 @@ class Settings {
 			'show_on_front'          => array(
 				'type'        => 'string',
 				'enum'        => array( 'posts', 'page' ),
-				'description' => __( 'Homepage shows latest posts or a static page.', 'viagent' ),
+				'description' => __( 'Homepage shows latest posts or a static page.', 'viagent-production' ),
 			),
 			'page_on_front'          => array(
 				'type'        => 'integer',
 				'minimum'     => 0,
-				'description' => __( 'Page ID used as the homepage when show_on_front is "page".', 'viagent' ),
+				'description' => __( 'Page ID used as the homepage when show_on_front is "page".', 'viagent-production' ),
 			),
 			'page_for_posts'         => array(
 				'type'        => 'integer',
 				'minimum'     => 0,
-				'description' => __( 'Page ID that lists posts when show_on_front is "page".', 'viagent' ),
+				'description' => __( 'Page ID that lists posts when show_on_front is "page".', 'viagent-production' ),
 			),
 			'default_comment_status' => array(
 				'type' => 'string',
@@ -71,12 +71,12 @@ class Settings {
 			),
 			'comment_moderation'     => array(
 				'type'        => 'boolean',
-				'description' => __( 'Comments must be manually approved.', 'viagent' ),
+				'description' => __( 'Comments must be manually approved.', 'viagent-production' ),
 			),
 			'site_icon'              => array(
 				'type'        => 'integer',
 				'minimum'     => 0,
-				'description' => __( 'Media library image ID used as the site icon.', 'viagent' ),
+				'description' => __( 'Media library image ID used as the site icon.', 'viagent-production' ),
 			),
 		);
 
@@ -85,7 +85,7 @@ class Settings {
 		 *
 		 * @param array<string,array> $settings Option name => JSON schema.
 		 */
-		return apply_filters( 'viagent_writable_settings', $settings );
+		return apply_filters( 'viagent_production_writable_settings', $settings );
 	}
 
 	/**
@@ -95,9 +95,9 @@ class Settings {
 		Abilities::add(
 			'get-settings',
 			array(
-				'category'    => 'viagent-settings',
-				'label'       => __( 'Get settings', 'viagent' ),
-				'description' => __( 'Gets general, reading and discussion settings (site title, tagline, homepage, timezone, comments…).', 'viagent' ),
+				'category'    => 'viagent-production-settings',
+				'label'       => __( 'Get settings', 'viagent-production' ),
+				'description' => __( 'Gets general, reading and discussion settings (site title, tagline, homepage, timezone, comments…).', 'viagent-production' ),
 				'execute'     => array( self::class, 'get_settings' ),
 				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
@@ -107,9 +107,9 @@ class Settings {
 		Abilities::add(
 			'update-settings',
 			array(
-				'category'    => 'viagent-settings',
-				'label'       => __( 'Update settings', 'viagent' ),
-				'description' => __( 'Changes one or more site settings. Only the settings listed in the input are allowed.', 'viagent' ),
+				'category'    => 'viagent-production-settings',
+				'label'       => __( 'Update settings', 'viagent-production' ),
+				'description' => __( 'Changes one or more site settings. Only the settings listed in the input are allowed.', 'viagent-production' ),
 				'input'       => self::writable(),
 				'execute'     => array( self::class, 'update_settings' ),
 				'permission'  => 'manage_options',
@@ -150,16 +150,16 @@ class Settings {
 		$writable = self::writable();
 		$changes  = array_intersect_key( (array) $input, $writable );
 		if ( empty( $changes ) ) {
-			return new WP_Error( 'viagent_nothing_to_update', __( 'Pass at least one setting to change.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_nothing_to_update', __( 'Pass at least one setting to change.', 'viagent-production' ) );
 		}
 
 		foreach ( array( 'page_on_front', 'page_for_posts' ) as $page_option ) {
 			if ( ! empty( $changes[ $page_option ] ) && 'page' !== get_post_type( (int) $changes[ $page_option ] ) ) {
-				return new WP_Error( 'viagent_invalid_page', sprintf( /* translators: %s: option name */ __( '%s must be the ID of a page.', 'viagent' ), $page_option ) );
+				return new WP_Error( 'viagent_production_invalid_page', sprintf( /* translators: %s: option name */ __( '%s must be the ID of a page.', 'viagent-production' ), $page_option ) );
 			}
 		}
 		if ( isset( $changes['timezone_string'] ) && ! in_array( $changes['timezone_string'], timezone_identifiers_list(), true ) ) {
-			return new WP_Error( 'viagent_invalid_timezone', __( 'Unknown timezone. Use a name like "America/New_York".', 'viagent' ) );
+			return new WP_Error( 'viagent_production_invalid_timezone', __( 'Unknown timezone. Use a name like "America/New_York".', 'viagent-production' ) );
 		}
 
 		$previous = array();

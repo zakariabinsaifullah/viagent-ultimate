@@ -3,14 +3,14 @@
  * Advanced Custom Fields tools: discover field groups and read or update
  * field values on posts, pages and products.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Integrations;
+namespace ViagentProduction\Integrations;
 
-use Viagent\Abilities\Abilities;
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Abilities\Abilities;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class ACF {
 
-	const CATEGORY = 'viagent-acf';
+	const CATEGORY = 'viagent-production-acf';
 
 	/**
 	 * Field types the AI may write. Complex types (repeaters, flexible content,
@@ -32,9 +32,9 @@ class ACF {
 	 * Registers hooks.
 	 */
 	public static function init() {
-		add_filter( 'viagent_apply_undo', array( self::class, 'apply_undo' ), 10, 2 );
-		add_filter( 'viagent_tool_summaries', array( self::class, 'summaries' ) );
-		add_filter( 'viagent_instructions', array( self::class, 'instructions' ) );
+		add_filter( 'viagent_production_apply_undo', array( self::class, 'apply_undo' ), 10, 2 );
+		add_filter( 'viagent_production_tool_summaries', array( self::class, 'summaries' ) );
+		add_filter( 'viagent_production_instructions', array( self::class, 'instructions' ) );
 	}
 
 	/**
@@ -44,8 +44,8 @@ class ACF {
 		wp_register_ability_category(
 			self::CATEGORY,
 			array(
-				'label'       => __( 'Custom fields (ACF)', 'viagent' ),
-				'description' => __( 'Fields added with Advanced Custom Fields.', 'viagent' ),
+				'label'       => __( 'Custom fields (ACF)', 'viagent-production' ),
+				'description' => __( 'Fields added with Advanced Custom Fields.', 'viagent-production' ),
 			)
 		);
 	}
@@ -74,8 +74,8 @@ class ACF {
 			'list-acf-field-groups',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'List ACF field groups', 'viagent' ),
-				'description' => __( 'Lists ACF field groups with their fields (name, label, type, choices) and where they appear. Optionally only groups that apply to one post.', 'viagent' ),
+				'label'       => __( 'List ACF field groups', 'viagent-production' ),
+				'description' => __( 'Lists ACF field groups with their fields (name, label, type, choices) and where they appear. Optionally only groups that apply to one post.', 'viagent-production' ),
 				'input'       => array( 'post_id' => $post_id ),
 				'execute'     => array( self::class, 'list_field_groups' ),
 				'permission'  => 'edit_posts',
@@ -87,8 +87,8 @@ class ACF {
 			'get-acf-fields',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'Get ACF fields', 'viagent' ),
-				'description' => __( 'Gets all ACF field values of a post, page or product, with each field\'s label and type.', 'viagent' ),
+				'label'       => __( 'Get ACF fields', 'viagent-production' ),
+				'description' => __( 'Gets all ACF field values of a post, page or product, with each field\'s label and type.', 'viagent-production' ),
 				'input'       => array( 'post_id' => $post_id ),
 				'required'    => array( 'post_id' ),
 				'execute'     => array( self::class, 'get_fields' ),
@@ -103,14 +103,14 @@ class ACF {
 			'update-acf-field',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'Update ACF field', 'viagent' ),
-				'description' => __( 'Sets one ACF field on a post by field name or key. Use IDs for image, file, post and user fields; arrays for checkboxes and relationships; true/false for toggles; "Ymd" dates such as "20261231" for date pickers.', 'viagent' ),
+				'label'       => __( 'Update ACF field', 'viagent-production' ),
+				'description' => __( 'Sets one ACF field on a post by field name or key. Use IDs for image, file, post and user fields; arrays for checkboxes and relationships; true/false for toggles; "Ymd" dates such as "20261231" for date pickers.', 'viagent-production' ),
 				'input'       => array(
 					'post_id' => $post_id,
 					'field'   => array(
 						'type'        => 'string',
 						'minLength'   => 1,
-						'description' => __( 'Field name (e.g. "price_note") or key (e.g. "field_abc123").', 'viagent' ),
+						'description' => __( 'Field name (e.g. "price_note") or key (e.g. "field_abc123").', 'viagent-production' ),
 					),
 					'value'   => array(
 						'type' => array( 'string', 'number', 'integer', 'boolean', 'array', 'object', 'null' ),
@@ -202,7 +202,7 @@ class ACF {
 	public static function get_fields( $input ) {
 		$post = get_post( (int) $input['post_id'] );
 		if ( ! $post ) {
-			return new WP_Error( 'viagent_not_found', __( 'No post found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No post found with that ID.', 'viagent-production' ) );
 		}
 
 		$fields = array();
@@ -229,7 +229,7 @@ class ACF {
 	public static function update_field( $input ) {
 		$post = get_post( (int) $input['post_id'] );
 		if ( ! $post ) {
-			return new WP_Error( 'viagent_not_found', __( 'No post found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No post found with that ID.', 'viagent-production' ) );
 		}
 		$editable = Policy::check_post_editable( $post );
 		if ( is_wp_error( $editable ) ) {
@@ -242,16 +242,16 @@ class ACF {
 			$field = get_field_object( $input['field'], $post->ID, false, false );
 		}
 		if ( ! $field ) {
-			return new WP_Error( 'viagent_unknown_field', __( 'No ACF field with that name or key applies to this post. Use list_acf_field_groups with the post_id.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_unknown_field', __( 'No ACF field with that name or key applies to this post. Use list_acf_field_groups with the post_id.', 'viagent-production' ) );
 		}
 		if ( ! in_array( $field['type'], self::WRITABLE_TYPES, true ) ) {
 			/* translators: %s: field type */
-			return new WP_Error( 'viagent_unsupported_field', sprintf( __( 'Fields of type "%s" can be read but not changed by AI apps yet. Edit this field in WordPress.', 'viagent' ), $field['type'] ) );
+			return new WP_Error( 'viagent_production_unsupported_field', sprintf( __( 'Fields of type "%s" can be read but not changed by AI apps yet. Edit this field in WordPress.', 'viagent-production' ), $field['type'] ) );
 		}
 
 		$previous = get_field( $field['key'], $post->ID, false );
 		if ( ! update_field( $field['key'], $input['value'], $post->ID ) && get_field( $field['key'], $post->ID, false ) !== $input['value'] ) {
-			return new WP_Error( 'viagent_update_failed', __( 'The field could not be saved.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_update_failed', __( 'The field could not be saved.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'post', $post->ID );
@@ -283,7 +283,7 @@ class ACF {
 			return $result;
 		}
 		if ( ! current_user_can( 'edit_post', (int) $undo['post_id'] ) ) {
-			return new WP_Error( 'viagent_forbidden', __( 'You are not allowed to change this item.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to change this item.', 'viagent-production' ) );
 		}
 		if ( null === $undo['value'] ) {
 			delete_field( $undo['field_key'], (int) $undo['post_id'] );
@@ -303,9 +303,9 @@ class ACF {
 		return array_merge(
 			$summaries,
 			array(
-				'list_acf_field_groups' => __( 'See which custom fields exist and where.', 'viagent' ),
-				'get_acf_fields'        => __( 'Read the custom fields of a post or page.', 'viagent' ),
-				'update_acf_field'      => __( 'Fill in or change custom fields.', 'viagent' ),
+				'list_acf_field_groups' => __( 'See which custom fields exist and where.', 'viagent-production' ),
+				'get_acf_fields'        => __( 'Read the custom fields of a post or page.', 'viagent-production' ),
+				'update_acf_field'      => __( 'Fill in or change custom fields.', 'viagent-production' ),
 			)
 		);
 	}

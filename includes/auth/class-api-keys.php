@@ -2,25 +2,25 @@
 /**
  * API key storage. Only an HMAC of each key is stored; the plain key is shown once.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Auth;
+namespace ViagentProduction\Auth;
 
-use Viagent\Installer;
-use Viagent\Security\Policy;
+use ViagentProduction\Installer;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent Production's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
 
 /**
  * API keys repository.
  */
 class API_Keys {
 
-	const PREFIX = 'viagent_sk_';
+	const PREFIX = 'viagent_production_sk_';
 
 	/**
 	 * Hashes a plain key.
@@ -55,16 +55,16 @@ class API_Keys {
 		$level   = (string) ( $args['access_level'] ?? Policy::READ );
 
 		if ( ! get_userdata( $user_id ) ) {
-			return new WP_Error( 'viagent_invalid_user', __( 'That user does not exist.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_invalid_user', __( 'That user does not exist.', 'viagent-production' ) );
 		}
 		if ( ! Policy::is_valid_level( $level ) ) {
-			return new WP_Error( 'viagent_invalid_level', __( 'Unknown access level.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_invalid_level', __( 'Unknown access level.', 'viagent-production' ) );
 		}
 
 		$key = self::PREFIX . wp_generate_password( 40, false, false );
 		$row = array(
 			'user_id'      => $user_id,
-			'name'         => sanitize_text_field( $args['name'] ?? __( 'AI connection', 'viagent' ) ),
+			'name'         => sanitize_text_field( $args['name'] ?? __( 'AI connection', 'viagent-production' ) ),
 			'client'       => sanitize_key( $args['client'] ?? '' ),
 			'key_prefix'   => substr( $key, 0, 16 ),
 			'key_hash'     => self::hash( $key ),
@@ -76,7 +76,7 @@ class API_Keys {
 		);
 
 		if ( false === $wpdb->insert( Installer::table( 'keys' ), $row ) ) {
-			return new WP_Error( 'viagent_db_error', __( 'Could not save the key.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_db_error', __( 'Could not save the key.', 'viagent-production' ) );
 		}
 
 		$row['id']  = (int) $wpdb->insert_id;

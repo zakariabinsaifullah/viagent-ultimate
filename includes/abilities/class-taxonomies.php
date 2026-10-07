@@ -2,13 +2,13 @@
 /**
  * Taxonomy abilities: categories, tags and custom taxonomies.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_Post;
 use WP_Term;
@@ -27,7 +27,7 @@ class Taxonomies {
 		$taxonomy = array(
 			'type'        => 'string',
 			'default'     => 'category',
-			'description' => __( 'Taxonomy name, e.g. "category" or "post_tag". See list_taxonomies.', 'viagent' ),
+			'description' => __( 'Taxonomy name, e.g. "category" or "post_tag". See list_taxonomies.', 'viagent-production' ),
 		);
 		$term_id  = array(
 			'type'    => 'integer',
@@ -37,9 +37,9 @@ class Taxonomies {
 		Abilities::add(
 			'list-taxonomies',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'List taxonomies', 'viagent' ),
-				'description' => __( 'Lists taxonomies (categories, tags and custom ones) with the post types they apply to.', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'List taxonomies', 'viagent-production' ),
+				'description' => __( 'Lists taxonomies (categories, tags and custom ones) with the post types they apply to.', 'viagent-production' ),
 				'execute'     => array( self::class, 'list_taxonomies' ),
 				'permission'  => 'read',
 				'meta'        => Abilities::read_meta(),
@@ -49,9 +49,9 @@ class Taxonomies {
 		Abilities::add(
 			'list-terms',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'List terms', 'viagent' ),
-				'description' => __( 'Lists terms (e.g. categories or tags) of a taxonomy, including empty ones, with post counts.', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'List terms', 'viagent-production' ),
+				'description' => __( 'Lists terms (e.g. categories or tags) of a taxonomy, including empty ones, with post counts.', 'viagent-production' ),
 				'input'       => array_merge(
 					array(
 						'taxonomy' => $taxonomy,
@@ -82,9 +82,9 @@ class Taxonomies {
 		Abilities::add(
 			'create-term',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'Create term', 'viagent' ),
-				'description' => __( 'Creates a category, tag or custom taxonomy term.', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'Create term', 'viagent-production' ),
+				'description' => __( 'Creates a category, tag or custom taxonomy term.', 'viagent-production' ),
 				'input'       => array_merge( array( 'taxonomy' => $taxonomy ), $term_fields ),
 				'required'    => array( 'name' ),
 				'execute'     => array( self::class, 'create_term' ),
@@ -99,9 +99,9 @@ class Taxonomies {
 		Abilities::add(
 			'update-term',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'Update term', 'viagent' ),
-				'description' => __( 'Renames or edits a term (name, slug, description, parent).', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'Update term', 'viagent-production' ),
+				'description' => __( 'Renames or edits a term (name, slug, description, parent).', 'viagent-production' ),
 				'input'       => array_merge( array( 'id' => $term_id ), $term_fields ),
 				'required'    => array( 'id' ),
 				'execute'     => array( self::class, 'update_term' ),
@@ -115,9 +115,9 @@ class Taxonomies {
 		Abilities::add(
 			'delete-term',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'Delete term', 'viagent' ),
-				'description' => __( 'Permanently deletes a term. Posts keep existing but lose this term. The default category cannot be deleted.', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'Delete term', 'viagent-production' ),
+				'description' => __( 'Permanently deletes a term. Posts keep existing but lose this term. The default category cannot be deleted.', 'viagent-production' ),
 				'input'       => array( 'id' => $term_id ),
 				'required'    => array( 'id' ),
 				'execute'     => array( self::class, 'delete_term' ),
@@ -131,9 +131,9 @@ class Taxonomies {
 		Abilities::add(
 			'assign-terms',
 			array(
-				'category'    => 'viagent-taxonomies',
-				'label'       => __( 'Assign terms to post', 'viagent' ),
-				'description' => __( 'Sets or adds terms on a post. Terms can be names, slugs or IDs; missing names are created.', 'viagent' ),
+				'category'    => 'viagent-production-taxonomies',
+				'label'       => __( 'Assign terms to post', 'viagent-production' ),
+				'description' => __( 'Sets or adds terms on a post. Terms can be names, slugs or IDs; missing names are created.', 'viagent-production' ),
 				'input'       => array(
 					'post_id'  => $term_id,
 					'taxonomy' => $taxonomy,
@@ -144,7 +144,7 @@ class Taxonomies {
 					'append'   => array(
 						'type'        => 'boolean',
 						'default'     => false,
-						'description' => __( 'Add to existing terms instead of replacing them.', 'viagent' ),
+						'description' => __( 'Add to existing terms instead of replacing them.', 'viagent-production' ),
 					),
 				),
 				'required'    => array( 'post_id', 'terms' ),
@@ -184,7 +184,7 @@ class Taxonomies {
 	private static function taxonomy( $name ) {
 		$taxonomies = self::taxonomies();
 		if ( ! isset( $taxonomies[ $name ] ) ) {
-			return new WP_Error( 'viagent_invalid_taxonomy', sprintf( /* translators: %s: taxonomy */ __( 'Unknown taxonomy "%s". Use list_taxonomies to see available ones.', 'viagent' ), $name ) );
+			return new WP_Error( 'viagent_production_invalid_taxonomy', sprintf( /* translators: %s: taxonomy */ __( 'Unknown taxonomy "%s". Use list_taxonomies to see available ones.', 'viagent-production' ), $name ) );
 		}
 		return $taxonomies[ $name ];
 	}
@@ -292,7 +292,7 @@ class Taxonomies {
 	public static function update_term( $input ) {
 		$term = get_term( (int) $input['id'] );
 		if ( ! $term instanceof WP_Term || is_wp_error( self::taxonomy( $term->taxonomy ) ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'No term found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No term found with that ID.', 'viagent-production' ) );
 		}
 
 		$args = self::term_args( $input );
@@ -318,7 +318,7 @@ class Taxonomies {
 	public static function delete_term( $input ) {
 		$term = get_term( (int) $input['id'] );
 		if ( ! $term instanceof WP_Term || is_wp_error( self::taxonomy( $term->taxonomy ) ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'No term found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No term found with that ID.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'term', $term->term_id );
@@ -328,7 +328,7 @@ class Taxonomies {
 			return $result;
 		}
 		if ( true !== $result ) {
-			return new WP_Error( 'viagent_delete_failed', __( 'This term cannot be deleted (it may be the default category).', 'viagent' ) );
+			return new WP_Error( 'viagent_production_delete_failed', __( 'This term cannot be deleted (it may be the default category).', 'viagent-production' ) );
 		}
 
 		return array(
@@ -391,10 +391,10 @@ class Taxonomies {
 			return $tax;
 		}
 		if ( ! in_array( $post->post_type, $tax->object_type, true ) ) {
-			return new WP_Error( 'viagent_taxonomy_mismatch', sprintf( /* translators: 1: taxonomy, 2: post type */ __( 'The taxonomy "%1$s" is not used by "%2$s".', 'viagent' ), $tax->name, $post->post_type ) );
+			return new WP_Error( 'viagent_production_taxonomy_mismatch', sprintf( /* translators: 1: taxonomy, 2: post type */ __( 'The taxonomy "%1$s" is not used by "%2$s".', 'viagent-production' ), $tax->name, $post->post_type ) );
 		}
 		if ( ! current_user_can( $tax->cap->assign_terms ) ) {
-			return new WP_Error( 'viagent_forbidden', __( 'You are not allowed to assign these terms.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to assign these terms.', 'viagent-production' ) );
 		}
 		$editable = Policy::check_post_editable( $post );
 		if ( is_wp_error( $editable ) ) {
@@ -412,7 +412,7 @@ class Taxonomies {
 			}
 			if ( ! $term instanceof WP_Term ) {
 				if ( ! current_user_can( $tax->cap->edit_terms ) ) {
-					return new WP_Error( 'viagent_forbidden', sprintf( /* translators: %s: term name */ __( 'The term "%s" does not exist and you are not allowed to create it.', 'viagent' ), $value ) );
+					return new WP_Error( 'viagent_production_forbidden', sprintf( /* translators: %s: term name */ __( 'The term "%s" does not exist and you are not allowed to create it.', 'viagent-production' ), $value ) );
 				}
 				$created = wp_insert_term( wp_slash( (string) $value ), $tax->name );
 				if ( is_wp_error( $created ) ) {

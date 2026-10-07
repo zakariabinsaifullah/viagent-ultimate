@@ -16,37 +16,37 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { Badge, ScreenHeader, levelTone } from '../components';
 
-const settings = window.viagentSettings;
+const settings = window.viagentProductionSettings;
 
 function ToolRow( { tool, onToggle } ) {
 	return (
-		<div className="viagent-tool">
-			<div className="viagent-tool__text">
+		<div className="viagent-production-tool">
+			<div className="viagent-production-tool__text">
 				<strong>{ tool.label }</strong>
 				<span>{ tool.summary }</span>
-				<span className="viagent-tool__badges">
+				<span className="viagent-production-tool__badges">
 					<Badge tone={ levelTone( tool.level ) }>
 						{ sprintf(
 							/* translators: %s: access level */
-							__( 'Access: %s', 'viagent' ),
+							__( 'Access: %s', 'viagent-production' ),
 							settings.levels[ tool.level ]
 						) }
 					</Badge>
 					{ ! tool.readonly && (
 						<Badge tone="info">
-							{ __( 'Makes changes', 'viagent' ) }
+							{ __( 'Makes changes', 'viagent-production' ) }
 						</Badge>
 					) }
 					{ tool.destructive && (
 						<Badge tone="danger">
-							{ __( 'Can delete', 'viagent' ) }
+							{ __( 'Can delete', 'viagent-production' ) }
 						</Badge>
 					) }
 					{ tool.source && (
 						<Badge tone="warning">
 							{ sprintf(
 								/* translators: %s: plugin namespace */
-								__( 'From: %s', 'viagent' ),
+								__( 'From: %s', 'viagent-production' ),
 								tool.source
 							) }
 						</Badge>
@@ -60,7 +60,7 @@ function ToolRow( { tool, onToggle } ) {
 					<span className="screen-reader-text">
 						{ sprintf(
 							/* translators: %s: tool name */
-							__( 'Enable %s', 'viagent' ),
+							__( 'Enable %s', 'viagent-production' ),
 							tool.label
 						) }
 					</span>
@@ -104,45 +104,45 @@ function PromptsCard() {
 	}
 
 	return (
-		<Card className="viagent-group viagent-group--tasks">
+		<Card className="viagent-production-group viagent-production-group--tasks">
 			<button
 				type="button"
-				className="viagent-group__header"
+				className="viagent-production-group__header"
 				aria-expanded={ isOpen }
 				onClick={ () => setIsOpen( ! isOpen ) }
 			>
-				<span className="viagent-group__text">
-					<strong>{ __( 'Ready-made tasks', 'viagent' ) }</strong>
-					<span className="viagent-muted">
+				<span className="viagent-production-group__text">
+					<strong>{ __( 'Ready-made tasks', 'viagent-production' ) }</strong>
+					<span className="viagent-production-muted">
 						{ __(
 							'One-click tasks AI apps can offer, e.g. in Claude Desktop’s “+” menu or as / commands in Claude Code and VS Code. Each appears only when the connection has the tools it needs.',
-							'viagent'
+							'viagent-production'
 						) }
 					</span>
 				</span>
 				<Badge tone="success">
 					{ sprintf(
 						/* translators: 1: enabled tasks, 2: total tasks */
-						__( '%1$d of %2$d on', 'viagent' ),
+						__( '%1$d of %2$d on', 'viagent-production' ),
 						prompts.filter( ( item ) => item.enabled ).length,
 						prompts.length
 					) }
 				</Badge>
-				<span className="viagent-group__chevron" aria-hidden="true" />
+				<span className="viagent-production-group__chevron" aria-hidden="true" />
 			</button>
 			{ isOpen && (
-				<CardBody className="viagent-tool-list">
+				<CardBody className="viagent-production-tool-list">
 					{ prompts.map( ( prompt ) => (
-						<div className="viagent-tool" key={ prompt.name }>
-							<div className="viagent-tool__text">
+						<div className="viagent-production-tool" key={ prompt.name }>
+							<div className="viagent-production-tool__text">
 								<strong>{ prompt.title }</strong>
 								<span>{ prompt.description }</span>
-								<span className="viagent-tool__badges">
+								<span className="viagent-production-tool__badges">
 									{ ! prompt.available && (
 										<Badge>
 											{ __(
 												'Needs tools that are off or missing',
-												'viagent'
+												'viagent-production'
 											) }
 										</Badge>
 									) }
@@ -155,7 +155,7 @@ function PromptsCard() {
 									<span className="screen-reader-text">
 										{ sprintf(
 											/* translators: %s: task name */
-											__( 'Enable %s', 'viagent' ),
+											__( 'Enable %s', 'viagent-production' ),
 											prompt.title
 										) }
 									</span>
@@ -234,10 +234,10 @@ export default function Tools() {
 	return (
 		<>
 			<ScreenHeader
-				title={ __( 'Tools & permissions', 'viagent' ) }
+				title={ __( 'Tools & permissions', 'viagent-production' ) }
 				description={ __(
 					'Tools are the actions AI apps can take. Each connection only sees the tools its access level allows — switch a tool off here to hide it from every app.',
-					'viagent'
+					'viagent-production'
 				) }
 			/>
 
@@ -250,13 +250,13 @@ export default function Tools() {
 			{ groups === null && <Spinner /> }
 
 			{ groups && (
-				<div className="viagent-toolbar">
+				<div className="viagent-production-toolbar">
 					<SearchControl
 						__nextHasNoMarginBottom
-						label={ __( 'Search tools', 'viagent' ) }
+						label={ __( 'Search tools', 'viagent-production' ) }
 						placeholder={ __(
 							'Search tools, e.g. “media” or “publish”',
-							'viagent'
+							'viagent-production'
 						) }
 						value={ search }
 						onChange={ setSearch }
@@ -264,29 +264,29 @@ export default function Tools() {
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Show', 'viagent' ) }
+						label={ __( 'Show', 'viagent-production' ) }
 						hideLabelFromVision
 						value={ show }
 						options={ [
 							{
-								label: __( 'All tools', 'viagent' ),
+								label: __( 'All tools', 'viagent-production' ),
 								value: 'all',
 							},
 							{
-								label: __( 'Switched on', 'viagent' ),
+								label: __( 'Switched on', 'viagent-production' ),
 								value: 'on',
 							},
 							{
-								label: __( 'Switched off', 'viagent' ),
+								label: __( 'Switched off', 'viagent-production' ),
 								value: 'off',
 							},
 						] }
 						onChange={ setShow }
 					/>
-					<span className="viagent-toolbar__summary">
+					<span className="viagent-production-toolbar__summary">
 						{ sprintf(
 							/* translators: 1: enabled tools, 2: total tools */
-							__( '%1$d of %2$d tools on', 'viagent' ),
+							__( '%1$d of %2$d tools on', 'viagent-production' ),
 							onCount,
 							all.length
 						) }
@@ -294,12 +294,12 @@ export default function Tools() {
 				</div>
 			) }
 
-			<div className="viagent-tool-groups">
+			<div className="viagent-production-tool-groups">
 				{ ! filtering && <PromptsCard /> }
 				{ groups && visible.length === 0 && (
-					<Card className="viagent-empty">
+					<Card className="viagent-production-empty">
 						<p>
-							{ __( 'No tools match your search.', 'viagent' ) }
+							{ __( 'No tools match your search.', 'viagent-production' ) }
 						</p>
 					</Card>
 				) }
@@ -309,10 +309,10 @@ export default function Tools() {
 					).length;
 					const isOpen = filtering || !! open[ group.slug ];
 					return (
-						<Card key={ group.slug } className="viagent-group">
+						<Card key={ group.slug } className="viagent-production-group">
 							<button
 								type="button"
-								className="viagent-group__header"
+								className="viagent-production-group__header"
 								aria-expanded={ isOpen }
 								onClick={ () =>
 									setOpen( {
@@ -321,27 +321,27 @@ export default function Tools() {
 									} )
 								}
 							>
-								<span className="viagent-group__text">
+								<span className="viagent-production-group__text">
 									<strong>{ group.label }</strong>
-									<span className="viagent-muted">
+									<span className="viagent-production-muted">
 										{ group.description }
 									</span>
 								</span>
 								<Badge tone={ on ? 'success' : 'neutral' }>
 									{ sprintf(
 										/* translators: 1: enabled tools, 2: total tools */
-										__( '%1$d of %2$d on', 'viagent' ),
+										__( '%1$d of %2$d on', 'viagent-production' ),
 										on,
 										group.tools.length
 									) }
 								</Badge>
 								<span
-									className="viagent-group__chevron"
+									className="viagent-production-group__chevron"
 									aria-hidden="true"
 								/>
 							</button>
 							{ isOpen && (
-								<CardBody className="viagent-tool-list">
+								<CardBody className="viagent-production-tool-list">
 									{ group.tools.map( ( tool ) => (
 										<ToolRow
 											key={ tool.ability }

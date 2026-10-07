@@ -1,9 +1,9 @@
 /**
- * Thin wrappers around the Viagent admin REST API.
+ * Thin wrappers around the Viagent Production admin REST API.
  */
 import apiFetch from '@wordpress/api-fetch';
 
-const base = '/viagent/v1/admin';
+const base = '/viagent-production/v1/admin';
 
 export const api = {
 	getState: () => apiFetch( { path: `${ base }/state` } ),

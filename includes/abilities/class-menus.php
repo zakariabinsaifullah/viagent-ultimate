@@ -2,13 +2,13 @@
 /**
  * Menu abilities: classic navigation menus and block-theme Navigation menus.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,9 +30,9 @@ class Menus {
 		Abilities::add(
 			'list-menus',
 			array(
-				'category'    => 'viagent-menus',
-				'label'       => __( 'List menus', 'viagent' ),
-				'description' => __( 'Lists navigation menus. Block themes use "block" menus (Navigation block, edited as block markup); classic themes use "classic" menus with items and theme locations.', 'viagent' ),
+				'category'    => 'viagent-production-menus',
+				'label'       => __( 'List menus', 'viagent-production' ),
+				'description' => __( 'Lists navigation menus. Block themes use "block" menus (Navigation block, edited as block markup); classic themes use "classic" menus with items and theme locations.', 'viagent-production' ),
 				'execute'     => array( self::class, 'list_menus' ),
 				'permission'  => 'edit_theme_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
@@ -42,9 +42,9 @@ class Menus {
 		Abilities::add(
 			'get-menu',
 			array(
-				'category'    => 'viagent-menus',
-				'label'       => __( 'Get menu', 'viagent' ),
-				'description' => __( 'Gets a menu: items for classic menus, block markup for block menus.', 'viagent' ),
+				'category'    => 'viagent-production-menus',
+				'label'       => __( 'Get menu', 'viagent-production' ),
+				'description' => __( 'Gets a menu: items for classic menus, block markup for block menus.', 'viagent-production' ),
 				'input'       => array(
 					'id'   => $id,
 					'type' => array(
@@ -63,16 +63,16 @@ class Menus {
 		Abilities::add(
 			'add-menu-item',
 			array(
-				'category'    => 'viagent-menus',
-				'label'       => __( 'Add classic menu item', 'viagent' ),
-				'description' => __( 'Adds a link to a classic menu. Link either to a post/page/term (object_type + object_id) or to a custom url.', 'viagent' ),
+				'category'    => 'viagent-production-menus',
+				'label'       => __( 'Add classic menu item', 'viagent-production' ),
+				'description' => __( 'Adds a link to a classic menu. Link either to a post/page/term (object_type + object_id) or to a custom url.', 'viagent-production' ),
 				'input'       => array(
 					'menu_id'        => $id,
 					'title'          => array( 'type' => 'string' ),
 					'url'            => array( 'type' => 'string' ),
 					'object_type'    => array(
 						'type'        => 'string',
-						'description' => __( 'Post type (e.g. "page") or taxonomy (e.g. "category").', 'viagent' ),
+						'description' => __( 'Post type (e.g. "page") or taxonomy (e.g. "category").', 'viagent-production' ),
 					),
 					'object_id'      => array(
 						'type'    => 'integer',
@@ -97,9 +97,9 @@ class Menus {
 		Abilities::add(
 			'remove-menu-item',
 			array(
-				'category'    => 'viagent-menus',
-				'label'       => __( 'Remove classic menu item', 'viagent' ),
-				'description' => __( 'Removes an item from a classic menu.', 'viagent' ),
+				'category'    => 'viagent-production-menus',
+				'label'       => __( 'Remove classic menu item', 'viagent-production' ),
+				'description' => __( 'Removes an item from a classic menu.', 'viagent-production' ),
 				'input'       => array( 'item_id' => $id ),
 				'required'    => array( 'item_id' ),
 				'execute'     => array( self::class, 'remove_menu_item' ),
@@ -111,9 +111,9 @@ class Menus {
 		Abilities::add(
 			'update-navigation-menu',
 			array(
-				'category'    => 'viagent-menus',
-				'label'       => __( 'Update block navigation menu', 'viagent' ),
-				'description' => __( 'Replaces the block markup of a block-theme navigation menu, e.g. <!-- wp:navigation-link {"label":"About","url":"/about/","kind":"custom"} /-->. Read it first with get_menu (type "block").', 'viagent' ),
+				'category'    => 'viagent-production-menus',
+				'label'       => __( 'Update block navigation menu', 'viagent-production' ),
+				'description' => __( 'Replaces the block markup of a block-theme navigation menu, e.g. <!-- wp:navigation-link {"label":"About","url":"/about/","kind":"custom"} /-->. Read it first with get_menu (type "block").', 'viagent-production' ),
 				'input'       => array(
 					'id'      => $id,
 					'content' => array( 'type' => 'string' ),
@@ -177,7 +177,7 @@ class Menus {
 		if ( 'block' === ( $input['type'] ?? 'classic' ) ) {
 			$navigation = get_post( (int) $input['id'] );
 			if ( ! $navigation || 'wp_navigation' !== $navigation->post_type ) {
-				return new WP_Error( 'viagent_not_found', __( 'No block menu found with that ID.', 'viagent' ) );
+				return new WP_Error( 'viagent_production_not_found', __( 'No block menu found with that ID.', 'viagent-production' ) );
 			}
 			return array(
 				'id'      => $navigation->ID,
@@ -188,7 +188,7 @@ class Menus {
 
 		$menu = wp_get_nav_menu_object( (int) $input['id'] );
 		if ( ! $menu ) {
-			return new WP_Error( 'viagent_not_found', __( 'No classic menu found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No classic menu found with that ID.', 'viagent-production' ) );
 		}
 
 		$items = array();
@@ -221,7 +221,7 @@ class Menus {
 	public static function add_menu_item( $input ) {
 		$menu = wp_get_nav_menu_object( (int) $input['menu_id'] );
 		if ( ! $menu ) {
-			return new WP_Error( 'viagent_not_found', __( 'No classic menu found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No classic menu found with that ID.', 'viagent-production' ) );
 		}
 
 		$args = array(
@@ -239,7 +239,7 @@ class Menus {
 			$args['menu-item-type'] = 'custom';
 			$args['menu-item-url']  = esc_url_raw( $input['url'] );
 		} else {
-			return new WP_Error( 'viagent_missing_target', __( 'Pass either url, or object_type and object_id.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_missing_target', __( 'Pass either url, or object_type and object_id.', 'viagent-production' ) );
 		}
 
 		$item_id = wp_update_nav_menu_item( $menu->term_id, 0, wp_slash( $args ) );
@@ -260,12 +260,12 @@ class Menus {
 	public static function remove_menu_item( $input ) {
 		$item = get_post( (int) $input['item_id'] );
 		if ( ! $item || 'nav_menu_item' !== $item->post_type ) {
-			return new WP_Error( 'viagent_not_found', __( 'No menu item found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No menu item found with that ID.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'menu_item', $item->ID );
 		if ( ! wp_delete_post( $item->ID, true ) ) {
-			return new WP_Error( 'viagent_delete_failed', __( 'Could not remove the menu item.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_delete_failed', __( 'Could not remove the menu item.', 'viagent-production' ) );
 		}
 		return array(
 			'id'      => $item->ID,
@@ -282,7 +282,7 @@ class Menus {
 	public static function update_navigation( $input ) {
 		$navigation = get_post( (int) $input['id'] );
 		if ( ! $navigation || 'wp_navigation' !== $navigation->post_type ) {
-			return new WP_Error( 'viagent_not_found', __( 'No block menu found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No block menu found with that ID.', 'viagent-production' ) );
 		}
 
 		$data = array(

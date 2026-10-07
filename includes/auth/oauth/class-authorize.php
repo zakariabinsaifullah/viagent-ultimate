@@ -1,16 +1,16 @@
 <?php
 /**
- * OAuth consent screen at wp-login.php?action=viagent_authorize.
+ * OAuth consent screen at wp-login.php?action=viagent_production_authorize.
  *
  * Runs inside wp-login.php so it looks like WordPress, works with any
  * permalink setting, and gets the login page's no-cache and anti-framing headers.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Auth\OAuth;
+namespace ViagentProduction\Auth\OAuth;
 
-use Viagent\Security\Policy;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Authorize {
 
-	const NONCE = 'viagent_authorize';
+	const NONCE = 'viagent_production_authorize';
 
 	/**
 	 * Parameters carried from the authorization request to the consent form.
@@ -32,7 +32,7 @@ class Authorize {
 	 */
 	public static function init() {
 		if ( OAuth::enabled() ) {
-			add_action( 'login_form_viagent_authorize', array( self::class, 'handle' ) );
+			add_action( 'login_form_viagent_production_authorize', array( self::class, 'handle' ) );
 		}
 	}
 
@@ -61,10 +61,10 @@ class Authorize {
 	private static function validate( array $params ) {
 		$client = OAuth::get_client( $params['client_id'] );
 		if ( ! $client ) {
-			return new WP_Error( 'invalid_client', __( 'This app is not registered with your site. Please start the connection again from your AI app.', 'viagent' ) );
+			return new WP_Error( 'invalid_client', __( 'This app is not registered with your site. Please start the connection again from your AI app.', 'viagent-production' ) );
 		}
 		if ( ! in_array( $params['redirect_uri'], $client->redirect_uris, true ) ) {
-			return new WP_Error( 'invalid_redirect', __( 'The app sent an unexpected return address, so the request was stopped for your safety.', 'viagent' ) );
+			return new WP_Error( 'invalid_redirect', __( 'The app sent an unexpected return address, so the request was stopped for your safety.', 'viagent-production' ) );
 		}
 
 		if ( 'code' !== $params['response_type'] ) {
@@ -126,7 +126,7 @@ class Authorize {
 		}
 
 		if ( Policy::is_paused() ) {
-			self::render_error( __( 'AI access to this site is paused. Resume it in Viagent → Settings, then try again.', 'viagent' ) );
+			self::render_error( __( 'AI access to this site is paused. Resume it in Viagent Production → Settings, then try again.', 'viagent-production' ) );
 		}
 
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) {
@@ -161,7 +161,7 @@ class Authorize {
 
 		$options = OAuth::consent_options();
 		if ( ! isset( $options[ $choice ] ) ) {
-			self::render_error( __( 'Please choose what the app may do.', 'viagent' ) );
+			self::render_error( __( 'Please choose what the app may do.', 'viagent-production' ) );
 		}
 
 		$code = OAuth::issue_code(
@@ -196,7 +196,7 @@ class Authorize {
 			return $parts['host'] ?? $redirect_uri;
 		}
 		/* translators: %s: URL scheme such as "cursor" */
-		return sprintf( __( 'the %s app on this computer', 'viagent' ), $parts['scheme'] ?? '' );
+		return sprintf( __( 'the %s app on this computer', 'viagent-production' ), $parts['scheme'] ?? '' );
 	}
 
 	/**
@@ -211,24 +211,24 @@ class Authorize {
 		$user    = wp_get_current_user();
 
 		self::enqueue_styles();
-		login_header( __( 'Connect an AI app', 'viagent' ) );
+		login_header( __( 'Connect an AI app', 'viagent-production' ) );
 		?>
-		<form class="viagent-consent" method="post" action="<?php echo esc_url( OAuth::authorization_endpoint() ); ?>">
+		<form class="viagent-production-consent" method="post" action="<?php echo esc_url( OAuth::authorization_endpoint() ); ?>">
 			<h2>
 				<?php
 				printf(
 					/* translators: 1: app name, 2: site name */
-					esc_html__( '%1$s wants to connect to %2$s', 'viagent' ),
+					esc_html__( '%1$s wants to connect to %2$s', 'viagent-production' ),
 					'<strong>' . esc_html( $client->client_name ) . '</strong>',
 					'<strong>' . esc_html( get_bloginfo( 'name' ) ) . '</strong>'
 				);
 				?>
 			</h2>
-			<p class="viagent-consent__meta">
+			<p class="viagent-production-consent__meta">
 				<?php
 				printf(
 					/* translators: 1: user name, 2: destination host */
-					esc_html__( 'It will act as %1$s. After you approve, you’ll return to %2$s.', 'viagent' ),
+					esc_html__( 'It will act as %1$s. After you approve, you’ll return to %2$s.', 'viagent-production' ),
 					'<strong>' . esc_html( $user->display_name ) . '</strong>',
 					'<strong>' . esc_html( self::destination( $params['redirect_uri'] ) ) . '</strong>'
 				);
@@ -236,9 +236,9 @@ class Authorize {
 			</p>
 
 			<fieldset>
-				<legend><?php esc_html_e( 'What may it do?', 'viagent' ); ?></legend>
+				<legend><?php esc_html_e( 'What may it do?', 'viagent-production' ); ?></legend>
 				<?php foreach ( $options as $key => $option ) : ?>
-					<label class="viagent-consent__option">
+					<label class="viagent-production-consent__option">
 						<input type="radio" name="access" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $default ); ?> />
 						<span>
 							<strong><?php echo esc_html( $option['label'] ); ?></strong>
@@ -248,8 +248,8 @@ class Authorize {
 				<?php endforeach; ?>
 			</fieldset>
 
-			<p class="viagent-consent__note">
-				<?php esc_html_e( 'The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent.', 'viagent' ); ?>
+			<p class="viagent-production-consent__note">
+				<?php esc_html_e( 'The app works on your content as you, but it can never manage plugins, themes, users or other site administration. Only approve apps you trust. You can see everything it does and disconnect it any time in Viagent Production.', 'viagent-production' ); ?>
 			</p>
 
 			<?php foreach ( $params as $name => $value ) : ?>
@@ -257,9 +257,9 @@ class Authorize {
 			<?php endforeach; ?>
 			<?php wp_nonce_field( self::NONCE ); ?>
 
-			<p class="viagent-consent__actions">
-				<button type="submit" name="decision" value="deny" class="button button-large"><?php esc_html_e( 'Cancel', 'viagent' ); ?></button>
-				<button type="submit" name="decision" value="allow" class="button button-primary button-large"><?php esc_html_e( 'Approve', 'viagent' ); ?></button>
+			<p class="viagent-production-consent__actions">
+				<button type="submit" name="decision" value="deny" class="button button-large"><?php esc_html_e( 'Cancel', 'viagent-production' ); ?></button>
+				<button type="submit" name="decision" value="allow" class="button button-primary button-large"><?php esc_html_e( 'Approve', 'viagent-production' ); ?></button>
 			</p>
 		</form>
 		<?php
@@ -274,8 +274,8 @@ class Authorize {
 	 */
 	private static function render_error( $message ) {
 		self::enqueue_styles();
-		login_header( __( 'Connect an AI app', 'viagent' ) );
-		echo '<div class="viagent-consent"><h2>' . esc_html__( 'We couldn’t connect this app', 'viagent' ) . '</h2><p>' . esc_html( $message ) . '</p></div>';
+		login_header( __( 'Connect an AI app', 'viagent-production' ) );
+		echo '<div class="viagent-production-consent"><h2>' . esc_html__( 'We couldn’t connect this app', 'viagent-production' ) . '</h2><p>' . esc_html( $message ) . '</p></div>';
 		login_footer();
 		exit;
 	}
@@ -287,7 +287,7 @@ class Authorize {
 		add_action(
 			'login_enqueue_scripts',
 			static function () {
-				wp_enqueue_style( 'viagent-consent', VIAGENT_URL . 'assets/css/consent.css', array(), VIAGENT_VERSION );
+				wp_enqueue_style( 'viagent-production-consent', VIAGENT_PRODUCTION_URL . 'assets/css/consent.css', array(), VIAGENT_PRODUCTION_VERSION );
 			}
 		);
 	}

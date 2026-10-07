@@ -1,19 +1,19 @@
 <?php
 /**
- * REST endpoints for the Viagent admin screens (viagent/v1/admin/*).
+ * REST endpoints for the Viagent Production admin screens (viagent-production/v1/admin/*).
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Admin;
+namespace ViagentProduction\Admin;
 
-use Viagent\Auth\API_Keys;
-use Viagent\Auth\OAuth\OAuth;
-use Viagent\Log\Activity_Log;
-use Viagent\MCP\Prompts;
-use Viagent\MCP\Tool_Registry;
-use Viagent\MCP\Transport;
-use Viagent\Security\Policy;
+use ViagentProduction\Auth\API_Keys;
+use ViagentProduction\Auth\OAuth\OAuth;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\MCP\Prompts;
+use ViagentProduction\MCP\Tool_Registry;
+use ViagentProduction\MCP\Transport;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Server;
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Admin_API {
 
-	const NS = 'viagent/v1';
+	const NS = 'viagent-production/v1';
 
 	/**
 	 * Registers routes.
@@ -231,7 +231,7 @@ class Admin_API {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => static function ( WP_REST_Request $request ) {
-					return array( 'authorization' => 'Bearer viagent-probe' === $request->get_header( 'authorization' ) );
+					return array( 'authorization' => 'Bearer viagent-production-probe' === $request->get_header( 'authorization' ) );
 				},
 				'permission_callback' => '__return_true',
 			)
@@ -258,9 +258,9 @@ class Admin_API {
 		return array(
 			'paused'                 => Policy::is_paused(),
 			'allow_permanent_delete' => Policy::allows_permanent_delete(),
-			'compact_mode'           => (bool) get_option( 'viagent_compact_mode', false ),
-			'delete_data'            => (bool) get_option( 'viagent_delete_data_on_uninstall', false ),
-			'integrations'           => \Viagent\Integrations\Integrations::status(),
+			'compact_mode'           => (bool) get_option( 'viagent_production_compact_mode', false ),
+			'delete_data'            => (bool) get_option( 'viagent_production_delete_data_on_uninstall', false ),
+			'integrations'           => \ViagentProduction\Integrations\Integrations::status(),
 			'endpoint'               => Transport::endpoint_url(),
 			'connections'            => count( API_Keys::all() ) + count( OAuth::active_grants() ),
 			'activity_total'         => $last['total'],
@@ -282,10 +282,10 @@ class Admin_API {
 			update_option( Policy::PERMANENT_DELETE_OPTION, (bool) $request['allow_permanent_delete'] );
 		}
 		if ( null !== $request['compact_mode'] ) {
-			update_option( 'viagent_compact_mode', (bool) $request['compact_mode'] );
+			update_option( 'viagent_production_compact_mode', (bool) $request['compact_mode'] );
 		}
 		if ( null !== $request['delete_data'] ) {
-			update_option( 'viagent_delete_data_on_uninstall', (bool) $request['delete_data'] );
+			update_option( 'viagent_production_delete_data_on_uninstall', (bool) $request['delete_data'] );
 		}
 		return self::get_state();
 	}
@@ -307,7 +307,7 @@ class Admin_API {
 			'access_level' => $row->access_level,
 			'draft_only'   => (bool) $row->draft_only,
 			'compact'      => ! empty( $row->compact ),
-			'user'         => $user ? $user->display_name : __( '(deleted user)', 'viagent' ),
+			'user'         => $user ? $user->display_name : __( '(deleted user)', 'viagent-production' ),
 			'created_at'   => self::iso( $row->created_at ),
 			'last_used_at' => self::iso( $row->last_used_at ),
 		);
@@ -336,12 +336,12 @@ class Admin_API {
 			$connections[] = array(
 				'type'         => 'oauth',
 				'id'           => (int) $grant->id,
-				'name'         => $grant->client_name ? $grant->client_name : __( 'AI app', 'viagent' ),
+				'name'         => $grant->client_name ? $grant->client_name : __( 'AI app', 'viagent-production' ),
 				'client'       => self::guess_client( (string) $grant->client_name ),
 				'key_prefix'   => '',
 				'access_level' => $grant->access_level,
 				'draft_only'   => (bool) $grant->draft_only,
-				'user'         => $user ? $user->display_name : __( '(deleted user)', 'viagent' ),
+				'user'         => $user ? $user->display_name : __( '(deleted user)', 'viagent-production' ),
 				'created_at'   => self::iso( $grant->created_at ),
 				'last_used_at' => self::iso( $grant->last_used_at ),
 			);
@@ -393,7 +393,7 @@ class Admin_API {
 	 */
 	public static function revoke_grant( WP_REST_Request $request ) {
 		if ( ! OAuth::revoke_grant( (int) $request['id'] ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'Connection not found.', 'viagent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'Connection not found.', 'viagent-production' ), array( 'status' => 404 ) );
 		}
 		return array( 'revoked' => true );
 	}
@@ -410,7 +410,7 @@ class Admin_API {
 				return self::connection( $row );
 			}
 		}
-		return new WP_Error( 'viagent_not_found', __( 'Connection not found.', 'viagent' ), array( 'status' => 404 ) );
+		return new WP_Error( 'viagent_production_not_found', __( 'Connection not found.', 'viagent-production' ), array( 'status' => 404 ) );
 	}
 
 	/**
@@ -450,12 +450,12 @@ class Admin_API {
 	 * @return bool
 	 */
 	private static function needs_compact( $client, $level, $draft_only ) {
-		$catalog = require VIAGENT_DIR . 'includes/clients/catalog.php';
+		$catalog = require VIAGENT_PRODUCTION_DIR . 'includes/clients/catalog.php';
 		$limit   = (int) ( $catalog[ $client ]['tool_limit'] ?? 0 );
 		if ( ! $limit ) {
 			return false;
 		}
-		$probe = new \Viagent\Auth\Connection(
+		$probe = new \ViagentProduction\Auth\Connection(
 			array(
 				'method'       => 'api_key',
 				'user_id'      => get_current_user_id(),
@@ -474,13 +474,13 @@ class Admin_API {
 	 */
 	public static function revoke_connection( WP_REST_Request $request ) {
 		if ( ! API_Keys::revoke( (int) $request['id'] ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'Connection not found.', 'viagent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'Connection not found.', 'viagent-production' ), array( 'status' => 404 ) );
 		}
 		return array( 'revoked' => true );
 	}
 
 	/**
-	 * Lists Viagent tools grouped by category with their switches.
+	 * Lists Viagent Production tools grouped by category with their switches.
 	 *
 	 * @return array
 	 */
@@ -488,7 +488,7 @@ class Admin_API {
 		$groups    = array();
 		$summaries = self::tool_summaries();
 		foreach ( wp_get_ability_categories() as $category ) {
-			if ( 0 === strpos( $category->get_slug(), 'viagent-' ) ) {
+			if ( 0 === strpos( $category->get_slug(), 'viagent-production-' ) ) {
 				$groups[ $category->get_slug() ] = array(
 					'slug'        => $category->get_slug(),
 					'label'       => $category->get_label(),
@@ -499,8 +499,8 @@ class Admin_API {
 		}
 		$groups['external'] = array(
 			'slug'        => 'external',
-			'label'       => __( 'From other plugins', 'viagent' ),
-			'description' => __( 'Abilities added by WordPress or your other plugins. They are off until you switch them on; review them before allowing AI apps to use them.', 'viagent' ),
+			'label'       => __( 'From other plugins', 'viagent-production' ),
+			'description' => __( 'Abilities added by WordPress or your other plugins. They are off until you switch them on; review them before allowing AI apps to use them.', 'viagent-production' ),
 			'tools'       => array(),
 		);
 
@@ -539,56 +539,56 @@ class Admin_API {
 	}
 
 	/**
-	 * Plain-language summaries of Viagent tools for the Tools screen. The ability
+	 * Plain-language summaries of Viagent Production tools for the Tools screen. The ability
 	 * descriptions are written for the AI; these are written for people.
 	 *
 	 * @return array<string,string>
 	 */
 	private static function tool_summaries() {
 		$summaries = array(
-			'get_site_info'          => __( 'See the site name, address, language, theme and content types.', 'viagent' ),
-			'search_content'         => __( 'Search all posts, pages and other content.', 'viagent' ),
-			'list_post_types'        => __( 'See which kinds of content the site has.', 'viagent' ),
-			'list_posts'             => __( 'Browse posts, pages and other content.', 'viagent' ),
-			'get_post'               => __( 'Read a post or page in full.', 'viagent' ),
-			'create_post'            => __( 'Write new posts and pages.', 'viagent' ),
-			'update_post'            => __( 'Edit existing posts and pages.', 'viagent' ),
-			'delete_post'            => __( 'Move posts and pages to the trash.', 'viagent' ),
-			'restore_post'           => __( 'Bring posts and pages back from the trash.', 'viagent' ),
-			'list_revisions'         => __( 'See earlier versions of a post or page.', 'viagent' ),
-			'restore_revision'       => __( 'Roll a post or page back to an earlier version.', 'viagent' ),
-			'get_post_meta'          => __( 'Read custom fields on a post.', 'viagent' ),
-			'update_post_meta'       => __( 'Change custom fields on a post.', 'viagent' ),
-			'list_block_types'       => __( 'See which blocks can be used in content.', 'viagent' ),
-			'list_patterns'          => __( 'Browse ready-made layouts (patterns).', 'viagent' ),
-			'get_pattern'            => __( 'Use a ready-made layout in content.', 'viagent' ),
-			'list_taxonomies'        => __( 'See the kinds of categories and tags.', 'viagent' ),
-			'list_terms'             => __( 'Browse categories and tags.', 'viagent' ),
-			'create_term'            => __( 'Add new categories and tags.', 'viagent' ),
-			'update_term'            => __( 'Rename or edit categories and tags.', 'viagent' ),
-			'delete_term'            => __( 'Delete categories and tags.', 'viagent' ),
-			'assign_terms'           => __( 'Put posts into categories and add tags.', 'viagent' ),
-			'list_media'             => __( 'Browse the media library.', 'viagent' ),
-			'upload_media_from_url'  => __( 'Add images and files from a web address.', 'viagent' ),
-			'upload_media_base64'    => __( 'Upload images and files the AI created.', 'viagent' ),
-			'update_media'           => __( 'Edit image titles, captions and alt text.', 'viagent' ),
-			'set_featured_image'     => __( 'Choose the featured image of a post.', 'viagent' ),
-			'delete_media'           => __( 'Permanently delete files from the media library.', 'viagent' ),
-			'list_comments'          => __( 'Read comments, including ones waiting for approval.', 'viagent' ),
-			'reply_to_comment'       => __( 'Reply to comments publicly.', 'viagent' ),
-			'moderate_comment'       => __( 'Approve, hold, mark as spam or trash comments.', 'viagent' ),
-			'list_users'             => __( 'See user accounts and their roles.', 'viagent' ),
-			'get_user'               => __( 'See one user account.', 'viagent' ),
-			'list_menus'             => __( 'See the site’s navigation menus.', 'viagent' ),
-			'get_menu'               => __( 'See the links in a menu.', 'viagent' ),
-			'add_menu_item'          => __( 'Add links to a menu.', 'viagent' ),
-			'remove_menu_item'       => __( 'Remove links from a menu.', 'viagent' ),
-			'update_navigation_menu' => __( 'Edit the navigation menu of a block theme.', 'viagent' ),
-			'get_settings'           => __( 'See the site title, homepage, timezone and other settings.', 'viagent' ),
-			'update_settings'        => __( 'Change the site title, homepage, timezone and similar settings.', 'viagent' ),
-			'list_plugins'           => __( 'See installed plugins.', 'viagent' ),
-			'list_themes'            => __( 'See installed themes.', 'viagent' ),
-			'get_site_health'        => __( 'Check versions, updates and technical health.', 'viagent' ),
+			'get_site_info'          => __( 'See the site name, address, language, theme and content types.', 'viagent-production' ),
+			'search_content'         => __( 'Search all posts, pages and other content.', 'viagent-production' ),
+			'list_post_types'        => __( 'See which kinds of content the site has.', 'viagent-production' ),
+			'list_posts'             => __( 'Browse posts, pages and other content.', 'viagent-production' ),
+			'get_post'               => __( 'Read a post or page in full.', 'viagent-production' ),
+			'create_post'            => __( 'Write new posts and pages.', 'viagent-production' ),
+			'update_post'            => __( 'Edit existing posts and pages.', 'viagent-production' ),
+			'delete_post'            => __( 'Move posts and pages to the trash.', 'viagent-production' ),
+			'restore_post'           => __( 'Bring posts and pages back from the trash.', 'viagent-production' ),
+			'list_revisions'         => __( 'See earlier versions of a post or page.', 'viagent-production' ),
+			'restore_revision'       => __( 'Roll a post or page back to an earlier version.', 'viagent-production' ),
+			'get_post_meta'          => __( 'Read custom fields on a post.', 'viagent-production' ),
+			'update_post_meta'       => __( 'Change custom fields on a post.', 'viagent-production' ),
+			'list_block_types'       => __( 'See which blocks can be used in content.', 'viagent-production' ),
+			'list_patterns'          => __( 'Browse ready-made layouts (patterns).', 'viagent-production' ),
+			'get_pattern'            => __( 'Use a ready-made layout in content.', 'viagent-production' ),
+			'list_taxonomies'        => __( 'See the kinds of categories and tags.', 'viagent-production' ),
+			'list_terms'             => __( 'Browse categories and tags.', 'viagent-production' ),
+			'create_term'            => __( 'Add new categories and tags.', 'viagent-production' ),
+			'update_term'            => __( 'Rename or edit categories and tags.', 'viagent-production' ),
+			'delete_term'            => __( 'Delete categories and tags.', 'viagent-production' ),
+			'assign_terms'           => __( 'Put posts into categories and add tags.', 'viagent-production' ),
+			'list_media'             => __( 'Browse the media library.', 'viagent-production' ),
+			'upload_media_from_url'  => __( 'Add images and files from a web address.', 'viagent-production' ),
+			'upload_media_base64'    => __( 'Upload images and files the AI created.', 'viagent-production' ),
+			'update_media'           => __( 'Edit image titles, captions and alt text.', 'viagent-production' ),
+			'set_featured_image'     => __( 'Choose the featured image of a post.', 'viagent-production' ),
+			'delete_media'           => __( 'Permanently delete files from the media library.', 'viagent-production' ),
+			'list_comments'          => __( 'Read comments, including ones waiting for approval.', 'viagent-production' ),
+			'reply_to_comment'       => __( 'Reply to comments publicly.', 'viagent-production' ),
+			'moderate_comment'       => __( 'Approve, hold, mark as spam or trash comments.', 'viagent-production' ),
+			'list_users'             => __( 'See user accounts and their roles.', 'viagent-production' ),
+			'get_user'               => __( 'See one user account.', 'viagent-production' ),
+			'list_menus'             => __( 'See the site’s navigation menus.', 'viagent-production' ),
+			'get_menu'               => __( 'See the links in a menu.', 'viagent-production' ),
+			'add_menu_item'          => __( 'Add links to a menu.', 'viagent-production' ),
+			'remove_menu_item'       => __( 'Remove links from a menu.', 'viagent-production' ),
+			'update_navigation_menu' => __( 'Edit the navigation menu of a block theme.', 'viagent-production' ),
+			'get_settings'           => __( 'See the site title, homepage, timezone and other settings.', 'viagent-production' ),
+			'update_settings'        => __( 'Change the site title, homepage, timezone and similar settings.', 'viagent-production' ),
+			'list_plugins'           => __( 'See installed plugins.', 'viagent-production' ),
+			'list_themes'            => __( 'See installed themes.', 'viagent-production' ),
+			'get_site_health'        => __( 'Check versions, updates and technical health.', 'viagent-production' ),
 		);
 
 		/**
@@ -596,7 +596,7 @@ class Admin_API {
 		 *
 		 * @param array<string,string> $summaries Tool name => summary.
 		 */
-		return apply_filters( 'viagent_tool_summaries', $summaries );
+		return apply_filters( 'viagent_production_tool_summaries', $summaries );
 	}
 
 	/**
@@ -608,7 +608,7 @@ class Admin_API {
 	public static function toggle_tool( WP_REST_Request $request ) {
 		$ability = wp_get_ability( $request['ability'] );
 		if ( ! $ability ) {
-			return new WP_Error( 'viagent_not_found', __( 'Tool not found.', 'viagent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'Tool not found.', 'viagent-production' ), array( 'status' => 404 ) );
 		}
 
 		$overrides = (array) get_option( Policy::TOOL_OVERRIDES_OPTION, array() );
@@ -616,7 +616,7 @@ class Admin_API {
 
 		// Abilities from other plugins are off unless explicitly switched on.
 		$default = Tool_Registry::is_own( $ability )
-			? ( ( (array) $ability->get_meta_item( 'viagent', array() ) )['default_enabled'] ?? true )
+			? ( ( (array) $ability->get_meta_item( 'viagent_production', array() ) )['default_enabled'] ?? true )
 			: false;
 		if ( (bool) $request['enabled'] !== (bool) $default ) {
 			$overrides[ $ability->get_name() ] = (bool) $request['enabled'];
@@ -662,7 +662,7 @@ class Admin_API {
 	 */
 	public static function toggle_prompt( WP_REST_Request $request ) {
 		if ( ! isset( Prompts::definitions()[ $request['name'] ] ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'Task not found.', 'viagent' ), array( 'status' => 404 ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'Task not found.', 'viagent-production' ), array( 'status' => 404 ) );
 		}
 		$overrides = (array) get_option( Prompts::OVERRIDES_OPTION, array() );
 		if ( $request['enabled'] ) {
@@ -725,7 +725,7 @@ class Admin_API {
 	}
 
 	/**
-	 * MCP names of read-only Viagent tools (hidden by the "changes only" filter).
+	 * MCP names of read-only Viagent Production tools (hidden by the "changes only" filter).
 	 *
 	 * @return string[]
 	 */
@@ -749,19 +749,19 @@ class Admin_API {
 	private static function undo_label( $undo ) {
 		switch ( $undo['action'] ?? '' ) {
 			case 'trash_post':
-				return __( 'The item the AI created will be moved to the trash.', 'viagent' );
+				return __( 'The item the AI created will be moved to the trash.', 'viagent-production' );
 			case 'untrash_post':
-				return __( 'The item will be restored from the trash.', 'viagent' );
+				return __( 'The item will be restored from the trash.', 'viagent-production' );
 			case 'restore_post_fields':
-				return __( 'The title, content and status will go back to how they were before this change.', 'viagent' );
+				return __( 'The title, content and status will go back to how they were before this change.', 'viagent-production' );
 			case 'restore_meta':
-				return __( 'The field will go back to its previous value.', 'viagent' );
+				return __( 'The field will go back to its previous value.', 'viagent-production' );
 			case 'restore_terms':
-				return __( 'The categories or tags will go back to how they were.', 'viagent' );
+				return __( 'The categories or tags will go back to how they were.', 'viagent-production' );
 			case 'restore_options':
-				return __( 'The settings will go back to their previous values.', 'viagent' );
+				return __( 'The settings will go back to their previous values.', 'viagent-production' );
 			case 'restore_metas':
-				return __( 'The fields will go back to their previous values.', 'viagent' );
+				return __( 'The fields will go back to their previous values.', 'viagent-production' );
 		}
 
 		/**
@@ -770,7 +770,7 @@ class Admin_API {
 		 * @param string $label Label.
 		 * @param array  $undo  Undo instructions.
 		 */
-		return apply_filters( 'viagent_undo_label', __( 'This change will be rolled back.', 'viagent' ), $undo );
+		return apply_filters( 'viagent_production_undo_label', __( 'This change will be rolled back.', 'viagent-production' ), $undo );
 	}
 
 	/**
@@ -807,7 +807,7 @@ class Admin_API {
 			case 'attachment':
 				$post = get_post( $id );
 				return $post ? array(
-					'title' => $post->post_title ? $post->post_title : __( '(no title)', 'viagent' ),
+					'title' => $post->post_title ? $post->post_title : __( '(no title)', 'viagent-production' ),
 					'url'   => get_edit_post_link( $id, 'raw' ),
 				) : null;
 			case 'term':
@@ -818,7 +818,7 @@ class Admin_API {
 				) : null;
 			case 'comment':
 				return array(
-					'title' => sprintf( /* translators: %d: comment ID */ __( 'Comment #%d', 'viagent' ), $id ),
+					'title' => sprintf( /* translators: %d: comment ID */ __( 'Comment #%d', 'viagent-production' ), $id ),
 					'url'   => admin_url( 'comment.php?action=editcomment&c=' . $id ),
 				);
 			case 'user':
@@ -831,7 +831,7 @@ class Admin_API {
 				$order = function_exists( 'wc_get_order' ) ? wc_get_order( $id ) : null;
 				return $order ? array(
 					/* translators: %s: order number */
-					'title' => sprintf( __( 'Order #%s', 'viagent' ), $order->get_order_number() ),
+					'title' => sprintf( __( 'Order #%s', 'viagent-production' ), $order->get_order_number() ),
 					'url'   => $order->get_edit_order_url(),
 				) : null;
 		}

@@ -4,15 +4,15 @@
  * descriptions, focus keywords, canonical URLs and indexing, and find
  * content with missing SEO data.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Integrations;
+namespace ViagentProduction\Integrations;
 
-use Viagent\Abilities\Abilities;
-use Viagent\Abilities\Content;
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Abilities\Abilities;
+use ViagentProduction\Abilities\Content;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_Post;
 
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class SEO {
 
-	const CATEGORY = 'viagent-seo';
+	const CATEGORY = 'viagent-production-seo';
 
 	/**
 	 * Post meta keys per provider for each SEO field.
@@ -77,8 +77,8 @@ class SEO {
 	 * Registers hooks.
 	 */
 	public static function init() {
-		add_filter( 'viagent_tool_summaries', array( self::class, 'summaries' ) );
-		add_filter( 'viagent_instructions', array( self::class, 'instructions' ) );
+		add_filter( 'viagent_production_tool_summaries', array( self::class, 'summaries' ) );
+		add_filter( 'viagent_production_instructions', array( self::class, 'instructions' ) );
 	}
 
 	/**
@@ -88,9 +88,9 @@ class SEO {
 		wp_register_ability_category(
 			self::CATEGORY,
 			array(
-				'label'       => __( 'SEO', 'viagent' ),
+				'label'       => __( 'SEO', 'viagent-production' ),
 				/* translators: %s: SEO plugin name */
-				'description' => sprintf( __( 'Search titles and descriptions via %s.', 'viagent' ), self::provider_name() ),
+				'description' => sprintf( __( 'Search titles and descriptions via %s.', 'viagent-production' ), self::provider_name() ),
 			)
 		);
 	}
@@ -119,8 +119,8 @@ class SEO {
 			'get-seo',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'Get SEO settings', 'viagent' ),
-				'description' => __( 'Gets the search title, meta description, focus keyword, canonical URL, indexing and social sharing text of a post, page or product.', 'viagent' ),
+				'label'       => __( 'Get SEO settings', 'viagent-production' ),
+				'description' => __( 'Gets the search title, meta description, focus keyword, canonical URL, indexing and social sharing text of a post, page or product.', 'viagent-production' ),
 				'input'       => array( 'post_id' => $post_id ),
 				'required'    => array( 'post_id' ),
 				'execute'     => array( self::class, 'get_seo' ),
@@ -135,20 +135,20 @@ class SEO {
 			'update-seo',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'Update SEO settings', 'viagent' ),
-				'description' => __( 'Sets the search title, meta description (ideally 120–155 characters), focus keyword, canonical URL, noindex or social sharing text. Only the fields you pass change; pass an empty string to clear one.', 'viagent' ),
+				'label'       => __( 'Update SEO settings', 'viagent-production' ),
+				'description' => __( 'Sets the search title, meta description (ideally 120–155 characters), focus keyword, canonical URL, noindex or social sharing text. Only the fields you pass change; pass an empty string to clear one.', 'viagent-production' ),
 				'input'       => array(
 					'post_id'        => $post_id,
 					'title'          => array(
 						'type'        => 'string',
-						'description' => __( 'Search result title. Yoast and Rank Math variables such as %%sitename%% are allowed.', 'viagent' ),
+						'description' => __( 'Search result title. Yoast and Rank Math variables such as %%sitename%% are allowed.', 'viagent-production' ),
 					),
 					'description'    => array( 'type' => 'string' ),
 					'focus_keyword'  => array( 'type' => 'string' ),
 					'canonical'      => array( 'type' => 'string' ),
 					'noindex'        => array(
 						'type'        => 'boolean',
-						'description' => __( 'true hides the page from search engines.', 'viagent' ),
+						'description' => __( 'true hides the page from search engines.', 'viagent-production' ),
 					),
 					'social_title'   => array( 'type' => 'string' ),
 					'social_summary' => array( 'type' => 'string' ),
@@ -172,8 +172,8 @@ class SEO {
 			'find-seo-issues',
 			array(
 				'category'    => self::CATEGORY,
-				'label'       => __( 'Find SEO issues', 'viagent' ),
-				'description' => __( 'Finds published content with a missing meta description, focus keyword or custom search title, or that is hidden from search engines.', 'viagent' ),
+				'label'       => __( 'Find SEO issues', 'viagent-production' ),
+				'description' => __( 'Finds published content with a missing meta description, focus keyword or custom search title, or that is hidden from search engines.', 'viagent-production' ),
 				'input'       => array(
 					'post_type' => array(
 						'type'    => 'string',
@@ -202,7 +202,7 @@ class SEO {
 	private static function find( $id ) {
 		$post = get_post( $id );
 		if ( ! $post || ! is_post_type_viewable( $post->post_type ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'No public post, page or product found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No public post, page or product found with that ID.', 'viagent-production' ) );
 		}
 		return $post;
 	}
@@ -284,7 +284,7 @@ class SEO {
 		}
 
 		if ( empty( $changed ) ) {
-			return new WP_Error( 'viagent_nothing_to_update', __( 'Pass at least one SEO field to change.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_nothing_to_update', __( 'Pass at least one SEO field to change.', 'viagent-production' ) );
 		}
 
 		self::refresh_cache( $post->ID );
@@ -365,7 +365,7 @@ class SEO {
 			$object = get_post_type_object( $type );
 			if ( ! $object || ! ( is_post_type_viewable( $object ) || current_user_can( $object->cap->edit_posts ) ) ) {
 				/* translators: %s: post type */
-				return new WP_Error( 'viagent_invalid_post_type', sprintf( __( 'Unknown post type "%s".', 'viagent' ), $type ) );
+				return new WP_Error( 'viagent_production_invalid_post_type', sprintf( __( 'Unknown post type "%s".', 'viagent-production' ), $type ) );
 			}
 		}
 
@@ -425,9 +425,9 @@ class SEO {
 		return array_merge(
 			$summaries,
 			array(
-				'get_seo'         => __( 'Read the search title and description of a page.', 'viagent' ),
-				'update_seo'      => __( 'Write search titles, descriptions and focus keywords.', 'viagent' ),
-				'find_seo_issues' => __( 'Find pages with missing or weak SEO data.', 'viagent' ),
+				'get_seo'         => __( 'Read the search title and description of a page.', 'viagent-production' ),
+				'update_seo'      => __( 'Write search titles, descriptions and focus keywords.', 'viagent-production' ),
+				'find_seo_issues' => __( 'Find pages with missing or weak SEO data.', 'viagent-production' ),
 			)
 		);
 	}

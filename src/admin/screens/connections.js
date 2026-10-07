@@ -16,27 +16,27 @@ import {
 	levelTone,
 } from '../components';
 
-const settings = window.viagentSettings;
+const settings = window.viagentProductionSettings;
 
 function ConnectionStatus( { connection, onHelp } ) {
 	if ( connection.last_used_at ) {
 		return (
-			<span className="viagent-conn__status is-connected">
-				<span className="viagent-dot is-success" aria-hidden="true" />
+			<span className="viagent-production-conn__status is-connected">
+				<span className="viagent-production-dot is-success" aria-hidden="true" />
 				{ sprintf(
 					/* translators: %s: relative time */
-					__( 'Active %s', 'viagent' ),
+					__( 'Active %s', 'viagent-production' ),
 					humanTimeDiff( connection.last_used_at )
 				) }
 			</span>
 		);
 	}
 	return (
-		<span className="viagent-conn__status is-waiting">
-			<span className="viagent-dot is-warning" aria-hidden="true" />
-			{ __( 'Not connected yet', 'viagent' ) }
+		<span className="viagent-production-conn__status is-waiting">
+			<span className="viagent-production-dot is-warning" aria-hidden="true" />
+			{ __( 'Not connected yet', 'viagent-production' ) }
 			<Button variant="link" onClick={ onHelp }>
-				{ __( 'How to finish', 'viagent' ) }
+				{ __( 'How to finish', 'viagent-production' ) }
 			</Button>
 		</span>
 	);
@@ -78,17 +78,17 @@ export default function Connections( { navigate } ) {
 			icon={ plus }
 			onClick={ () => navigate( 'connect' ) }
 		>
-			{ __( 'Connect an app', 'viagent' ) }
+			{ __( 'Connect an app', 'viagent-production' ) }
 		</Button>
 	);
 
 	return (
 		<>
 			<ScreenHeader
-				title={ __( 'Connections', 'viagent' ) }
+				title={ __( 'Connections', 'viagent-production' ) }
 				description={ __(
 					'AI apps that can access your site. Revoke any of them at any time — they are disconnected immediately.',
-					'viagent'
+					'viagent-production'
 				) }
 				actions={ newButton }
 			/>
@@ -102,15 +102,15 @@ export default function Connections( { navigate } ) {
 			{ connections === null && <Spinner /> }
 
 			{ connections && connections.length === 0 && (
-				<Card className="viagent-empty">
-					<span className="viagent-empty__icon" aria-hidden="true">
+				<Card className="viagent-production-empty">
+					<span className="viagent-production-empty__icon" aria-hidden="true">
 						✦
 					</span>
-					<h3>{ __( 'No AI apps connected yet', 'viagent' ) }</h3>
+					<h3>{ __( 'No AI apps connected yet', 'viagent-production' ) }</h3>
 					<p>
 						{ __(
 							'Connect Claude, ChatGPT, Cursor or another AI app in about a minute.',
-							'viagent'
+							'viagent-production'
 						) }
 					</p>
 					{ newButton }
@@ -118,19 +118,19 @@ export default function Connections( { navigate } ) {
 			) }
 
 			{ connections && connections.length > 0 && (
-				<Card className="viagent-list">
+				<Card className="viagent-production-list">
 					{ connections.map( ( connection ) => {
 						const client = clientFor( connection.client );
 						return (
 							<div
-								className="viagent-conn"
+								className="viagent-production-conn"
 								key={ `${ connection.type }-${ connection.id }` }
 							>
 								<ClientMark client={ client } />
-								<div className="viagent-conn__main">
+								<div className="viagent-production-conn__main">
 									<strong>{ connection.name }</strong>
 									<span
-										className="viagent-muted"
+										className="viagent-production-muted"
 										title={
 											connection.key_prefix
 												? `${ connection.key_prefix }…`
@@ -140,21 +140,21 @@ export default function Connections( { navigate } ) {
 										{ connection.type === 'oauth'
 											? __(
 													'Signed in with WordPress',
-													'viagent'
+													'viagent-production'
 												)
 											: __(
 													'Connected with a key',
-													'viagent'
+													'viagent-production'
 												) }
 										{ ' · ' }
 										{ sprintf(
 											/* translators: %s: user name */
-											__( 'acts as %s', 'viagent' ),
+											__( 'acts as %s', 'viagent-production' ),
 											connection.user
 										) }
 									</span>
 								</div>
-								<div className="viagent-conn__badges">
+								<div className="viagent-production-conn__badges">
 									<Badge
 										tone={ levelTone(
 											connection.access_level
@@ -171,13 +171,13 @@ export default function Connections( { navigate } ) {
 											<Badge>
 												{ __(
 													'Drafts only',
-													'viagent'
+													'viagent-production'
 												) }
 											</Badge>
 										) }
 									{ connection.compact && (
 										<Badge tone="info">
-											{ __( 'Compact', 'viagent' ) }
+											{ __( 'Compact', 'viagent-production' ) }
 										</Badge>
 									) }
 								</div>
@@ -186,13 +186,13 @@ export default function Connections( { navigate } ) {
 									onHelp={ () => navigate( 'connect' ) }
 								/>
 								<Button
-									className="viagent-conn__revoke"
+									className="viagent-production-conn__revoke"
 									variant="tertiary"
 									isDestructive
 									size="compact"
 									onClick={ () => setRevoking( connection ) }
 								>
-									{ __( 'Revoke', 'viagent' ) }
+									{ __( 'Revoke', 'viagent-production' ) }
 								</Button>
 							</div>
 						);
@@ -202,7 +202,7 @@ export default function Connections( { navigate } ) {
 
 			{ revoking && (
 				<Modal
-					title={ __( 'Revoke this connection?', 'viagent' ) }
+					title={ __( 'Revoke this connection?', 'viagent-production' ) }
 					onRequestClose={ () => setRevoking( null ) }
 					size="small"
 				>
@@ -211,17 +211,17 @@ export default function Connections( { navigate } ) {
 							/* translators: %s: connection name */
 							__(
 								'“%s” will immediately lose access to your site. You can create a new connection later.',
-								'viagent'
+								'viagent-production'
 							),
 							revoking.name
 						) }
 					</p>
-					<div className="viagent-actions">
+					<div className="viagent-production-actions">
 						<Button
 							variant="tertiary"
 							onClick={ () => setRevoking( null ) }
 						>
-							{ __( 'Cancel', 'viagent' ) }
+							{ __( 'Cancel', 'viagent-production' ) }
 						</Button>
 						<Button
 							variant="primary"
@@ -230,7 +230,7 @@ export default function Connections( { navigate } ) {
 							disabled={ busy }
 							onClick={ revoke }
 						>
-							{ __( 'Revoke access', 'viagent' ) }
+							{ __( 'Revoke access', 'viagent-production' ) }
 						</Button>
 					</div>
 				</Modal>

@@ -4,13 +4,13 @@
  * per-tool switches, rate limits, the kill switch, and the capability guard
  * that keeps AI connections away from site administration.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Security;
+namespace ViagentProduction\Security;
 
-use Viagent\Auth\Authenticator;
-use Viagent\Auth\Connection;
+use ViagentProduction\Auth\Authenticator;
+use ViagentProduction\Auth\Connection;
 use WP_Ability;
 use WP_Error;
 use WP_Post;
@@ -26,9 +26,9 @@ class Policy {
 	const CONTENT = 'content';
 	const ADMIN   = 'admin';
 
-	const PAUSED_OPTION           = 'viagent_paused';
-	const PERMANENT_DELETE_OPTION = 'viagent_allow_permanent_delete';
-	const TOOL_OVERRIDES_OPTION   = 'viagent_tool_overrides';
+	const PAUSED_OPTION           = 'viagent_production_paused';
+	const PERMANENT_DELETE_OPTION = 'viagent_production_allow_permanent_delete';
+	const TOOL_OVERRIDES_OPTION   = 'viagent_production_tool_overrides';
 
 	/**
 	 * Post statuses that are not visible to site visitors.
@@ -100,7 +100,7 @@ class Policy {
 	/**
 	 * Options an AI connection can never change, even through another
 	 * plugin's ability: site address, admin email, registration and roles,
-	 * active plugins and theme, and search engine visibility. Viagent's own
+	 * active plugins and theme, and search engine visibility. Viagent Production's own
 	 * options and every user's roles are protected too.
 	 */
 	const PROTECTED_OPTIONS = array(
@@ -173,8 +173,8 @@ class Policy {
 	 */
 	public static function block_protected_option( $value, $option, $old_value ) {
 		global $wpdb;
-		// Viagent's own options (pause switch, tool switches…) are the site owner's alone.
-		if ( in_array( $option, self::PROTECTED_OPTIONS, true ) || 0 === strpos( $option, 'viagent_' ) || $wpdb->get_blog_prefix() . 'user_roles' === $option ) {
+		// Viagent Production's own options (pause switch, tool switches…) are the site owner's alone.
+		if ( in_array( $option, self::PROTECTED_OPTIONS, true ) || 0 === strpos( $option, 'viagent_production_' ) || $wpdb->get_blog_prefix() . 'user_roles' === $option ) {
 			return $old_value;
 		}
 		return $value;
@@ -217,9 +217,9 @@ class Policy {
 	 */
 	public static function level_labels() {
 		return array(
-			self::READ    => __( 'Read only', 'viagent' ),
-			self::CONTENT => __( 'Content editor', 'viagent' ),
-			self::ADMIN   => __( 'Site manager', 'viagent' ),
+			self::READ    => __( 'Read only', 'viagent-production' ),
+			self::CONTENT => __( 'Content editor', 'viagent-production' ),
+			self::ADMIN   => __( 'Site manager', 'viagent-production' ),
 		);
 	}
 
@@ -285,8 +285,8 @@ class Policy {
 	public static function check_status( $status ) {
 		if ( self::is_draft_only() && ! in_array( $status, self::PRIVATE_STATUSES, true ) ) {
 			return new WP_Error(
-				'viagent_draft_only',
-				__( 'Draft-only mode is on, so the status can only be "draft" or "pending". Ask the site owner to publish it from WordPress, or to allow publishing in Viagent.', 'viagent' )
+				'viagent_production_draft_only',
+				__( 'Draft-only mode is on, so the status can only be "draft" or "pending". Ask the site owner to publish it from WordPress, or to allow publishing in Viagent Production.', 'viagent-production' )
 			);
 		}
 		return true;
@@ -301,10 +301,10 @@ class Policy {
 	public static function check_post_editable( WP_Post $post ) {
 		if ( self::is_draft_only() && ! in_array( $post->post_status, self::PRIVATE_STATUSES, true ) ) {
 			return new WP_Error(
-				'viagent_draft_only',
+				'viagent_production_draft_only',
 				sprintf(
 					/* translators: %s: post status */
-					__( 'Draft-only mode is on and this item is "%s", so it cannot be changed. Create a new draft instead, or ask the site owner for more access in Viagent.', 'viagent' ),
+					__( 'Draft-only mode is on and this item is "%s", so it cannot be changed. Create a new draft instead, or ask the site owner for more access in Viagent Production.', 'viagent-production' ),
 					$post->post_status
 				)
 			);
@@ -323,13 +323,13 @@ class Policy {
 		if ( isset( $overrides[ $ability->get_name() ] ) ) {
 			return (bool) $overrides[ $ability->get_name() ];
 		}
-		$viagent = (array) $ability->get_meta_item( 'viagent', array() );
+		$viagent = (array) $ability->get_meta_item( 'viagent_production', array() );
 		return $viagent['default_enabled'] ?? true;
 	}
 
 	/**
 	 * Whether a tool may be used in draft-only mode. Read-only tools always can;
-	 * write tools must opt in with `meta.viagent.draft_safe` and guard themselves.
+	 * write tools must opt in with `meta.viagent_production.draft_safe` and guard themselves.
 	 *
 	 * @param WP_Ability $ability Ability.
 	 * @return bool
@@ -339,7 +339,7 @@ class Policy {
 		if ( ! empty( $annotations['readonly'] ) ) {
 			return true;
 		}
-		$viagent = (array) $ability->get_meta_item( 'viagent', array() );
+		$viagent = (array) $ability->get_meta_item( 'viagent_production', array() );
 		return ! empty( $viagent['draft_safe'] );
 	}
 
@@ -356,17 +356,17 @@ class Policy {
 		 * @param int        $limit      Calls per minute. 0 disables the limit.
 		 * @param Connection $connection Connection.
 		 */
-		$limit = (int) apply_filters( 'viagent_rate_limit', 120, $connection );
+		$limit = (int) apply_filters( 'viagent_production_rate_limit', 120, $connection );
 		if ( $limit <= 0 ) {
 			return true;
 		}
 
-		$key   = 'viagent_rl_' . md5( $connection->method . ':' . $connection->credential_id . ':' . $connection->user_id . ':' . gmdate( 'YmdHi' ) );
+		$key   = 'viagent_production_rl_' . md5( $connection->method . ':' . $connection->credential_id . ':' . $connection->user_id . ':' . gmdate( 'YmdHi' ) );
 		$count = (int) get_transient( $key ) + 1;
 		set_transient( $key, $count, 2 * MINUTE_IN_SECONDS );
 
 		if ( $count > $limit ) {
-			return new WP_Error( 'viagent_rate_limited', __( 'Too many requests. Please wait a minute and try again.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_rate_limited', __( 'Too many requests. Please wait a minute and try again.', 'viagent-production' ) );
 		}
 		return true;
 	}

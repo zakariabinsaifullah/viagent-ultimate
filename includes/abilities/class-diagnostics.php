@@ -2,12 +2,12 @@
 /**
  * Diagnostics abilities: a read-only site health overview.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Security\Policy;
+use ViagentProduction\Security\Policy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,9 +23,9 @@ class Diagnostics {
 		Abilities::add(
 			'get-site-health',
 			array(
-				'category'    => 'viagent-diagnostics',
-				'label'       => __( 'Get site health', 'viagent' ),
-				'description' => __( 'Technical overview for troubleshooting: WordPress/PHP versions, pending updates, debug settings, memory, HTTPS and cron.', 'viagent' ),
+				'category'    => 'viagent-production-diagnostics',
+				'label'       => __( 'Get site health', 'viagent-production' ),
+				'description' => __( 'Technical overview for troubleshooting: WordPress/PHP versions, pending updates, debug settings, memory, HTTPS and cron.', 'viagent-production' ),
 				'execute'     => array( self::class, 'get_site_health' ),
 				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),

@@ -1,18 +1,18 @@
 <?php
 /**
- * Connection health checks shown on the Viagent screen. Each check explains
+ * Connection health checks shown on the Viagent Production screen. Each check explains
  * the problem in plain language and how to fix it.
  *
  * Reachability checks (endpoint and Authorization header) run in the browser
  * instead of as loopback requests, which hang on single-threaded dev servers
  * and are blocked by some hosts.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Admin;
+namespace ViagentProduction\Admin;
 
-use Viagent\Security\Policy;
+use ViagentProduction\Security\Policy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -93,9 +93,9 @@ class Health {
 		return self::result(
 			'paused',
 			'warning',
-			__( 'AI access is paused', 'viagent' ),
-			__( 'All AI apps are blocked until you resume access.', 'viagent' ),
-			__( 'Turn off "Pause all AI access" to reconnect.', 'viagent' )
+			__( 'AI access is paused', 'viagent-production' ),
+			__( 'All AI apps are blocked until you resume access.', 'viagent-production' ),
+			__( 'Turn off "Pause all AI access" to reconnect.', 'viagent-production' )
 		);
 	}
 
@@ -106,14 +106,14 @@ class Health {
 	 */
 	private static function check_permalinks() {
 		if ( get_option( 'permalink_structure' ) ) {
-			return self::result( 'permalinks', 'good', __( 'Permalinks', 'viagent' ), __( 'Pretty permalinks are on.', 'viagent' ) );
+			return self::result( 'permalinks', 'good', __( 'Permalinks', 'viagent-production' ), __( 'Pretty permalinks are on.', 'viagent-production' ) );
 		}
 		return self::result(
 			'permalinks',
 			'info',
-			__( 'Permalinks', 'viagent' ),
-			__( 'Plain permalinks are in use, so the connection URL contains "?rest_route=". It still works, but some apps prefer clean URLs.', 'viagent' ),
-			__( 'Go to Settings → Permalinks and choose "Post name".', 'viagent' )
+			__( 'Permalinks', 'viagent-production' ),
+			__( 'Plain permalinks are in use, so the connection URL contains "?rest_route=". It still works, but some apps prefer clean URLs.', 'viagent-production' ),
+			__( 'Go to Settings → Permalinks and choose "Post name".', 'viagent-production' )
 		);
 	}
 
@@ -124,14 +124,14 @@ class Health {
 	 */
 	private static function check_https() {
 		if ( wp_is_using_https() ) {
-			return self::result( 'https', 'good', __( 'HTTPS', 'viagent' ), __( 'Your site uses a secure (HTTPS) address, so keys are encrypted in transit.', 'viagent' ) );
+			return self::result( 'https', 'good', __( 'HTTPS', 'viagent-production' ), __( 'Your site uses a secure (HTTPS) address, so keys are encrypted in transit.', 'viagent-production' ) );
 		}
 		return self::result(
 			'https',
 			self::is_local() ? 'info' : 'critical',
-			__( 'HTTPS', 'viagent' ),
-			__( 'Your site does not use HTTPS, so connection keys travel unencrypted. Web apps like Claude.ai and ChatGPT require HTTPS.', 'viagent' ),
-			__( 'Ask your host to enable a free SSL certificate, then switch to https:// in Settings → General.', 'viagent' )
+			__( 'HTTPS', 'viagent-production' ),
+			__( 'Your site does not use HTTPS, so connection keys travel unencrypted. Web apps like Claude.ai and ChatGPT require HTTPS.', 'viagent-production' ),
+			__( 'Ask your host to enable a free SSL certificate, then switch to https:// in Settings → General.', 'viagent-production' )
 		);
 	}
 
@@ -147,9 +147,9 @@ class Health {
 		return self::result(
 			'local',
 			'info',
-			__( 'Local site', 'viagent' ),
-			__( 'This site runs on your computer. Apps on the same computer (Claude Code, Claude Desktop, Cursor, VS Code, Codex…) can connect. Web apps like Claude.ai and ChatGPT cannot reach it.', 'viagent' ),
-			__( 'To use web apps, publish the site or share it through a tunnel or a WordPress Studio preview site.', 'viagent' )
+			__( 'Local site', 'viagent-production' ),
+			__( 'This site runs on your computer. Apps on the same computer (Claude Code, Claude Desktop, Cursor, VS Code, Codex…) can connect. Web apps like Claude.ai and ChatGPT cannot reach it.', 'viagent-production' ),
+			__( 'To use web apps, publish the site or share it through a tunnel or a WordPress Studio preview site.', 'viagent-production' )
 		);
 	}
 }

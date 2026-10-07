@@ -1,5 +1,5 @@
 /**
- * Viagent admin app.
+ * Viagent Production admin app.
  */
 import { Button } from '@wordpress/components';
 import { createRoot, useEffect, useState } from '@wordpress/element';
@@ -14,15 +14,15 @@ import Settings from './screens/settings';
 import Tools from './screens/tools';
 import './admin.scss';
 
-const settings = window.viagentSettings;
+const settings = window.viagentProductionSettings;
 
 const TABS = [
-	{ id: 'overview', label: __( 'Overview', 'viagent' ) },
-	{ id: 'connect', label: __( 'Connect an app', 'viagent' ) },
-	{ id: 'connections', label: __( 'Connections', 'viagent' ) },
-	{ id: 'tools', label: __( 'Tools', 'viagent' ) },
-	{ id: 'activity', label: __( 'Activity', 'viagent' ) },
-	{ id: 'settings', label: __( 'Settings', 'viagent' ) },
+	{ id: 'overview', label: __( 'Overview', 'viagent-production' ) },
+	{ id: 'connect', label: __( 'Connect an app', 'viagent-production' ) },
+	{ id: 'connections', label: __( 'Connections', 'viagent-production' ) },
+	{ id: 'tools', label: __( 'Tools', 'viagent-production' ) },
+	{ id: 'activity', label: __( 'Activity', 'viagent-production' ) },
+	{ id: 'settings', label: __( 'Settings', 'viagent-production' ) },
 ];
 
 function currentTab() {
@@ -60,9 +60,9 @@ function App() {
 		setState( await api.updateSettings( { paused: false } ) );
 
 	return (
-		<div className="viagent-app">
-			<header className="viagent-header">
-				<span className="viagent-header__logo" aria-hidden="true">
+		<div className="viagent-production-app">
+			<header className="viagent-production-header">
+				<span className="viagent-production-header__logo" aria-hidden="true">
 					<svg
 						viewBox="0 0 24 24"
 						width="22"
@@ -72,27 +72,27 @@ function App() {
 						<path d="M12 2l1.8 4.7L18.5 8.5l-4.7 1.8L12 15l-1.8-4.7L5.5 8.5l4.7-1.8zM18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9zM6 15l.7 1.8L8.5 17.5l-1.8.7L6 20l-.7-1.8-1.8-.7 1.8-.7z" />
 					</svg>
 				</span>
-				<div className="viagent-header__title">
-					<h1>{ __( 'Viagent', 'viagent' ) }</h1>
+				<div className="viagent-production-header__title">
+					<h1>{ __( 'Viagent Production', 'viagent-production' ) }</h1>
 					<p>
 						{ __(
 							'Let AI apps like Claude, ChatGPT and Cursor work on',
-							'viagent'
+							'viagent-production'
 						) }{ ' ' }
 						<strong>{ settings.siteName }</strong>
 					</p>
 				</div>
 				{ state && tab !== 'overview' && (
 					<div
-						className={ `viagent-status ${ state.paused ? 'is-paused' : 'is-active' }` }
+						className={ `viagent-production-status ${ state.paused ? 'is-paused' : 'is-active' }` }
 					>
-						<span className="viagent-status__dot" />
+						<span className="viagent-production-status__dot" />
 						{ state.paused
-							? __( 'AI access paused', 'viagent' )
-							: __( 'AI access on', 'viagent' ) }
+							? __( 'AI access paused', 'viagent-production' )
+							: __( 'AI access on', 'viagent-production' ) }
 						{ state.paused && (
 							<Button variant="link" onClick={ resume }>
-								{ __( 'Resume', 'viagent' ) }
+								{ __( 'Resume', 'viagent-production' ) }
 							</Button>
 						) }
 					</div>
@@ -100,8 +100,8 @@ function App() {
 			</header>
 
 			<nav
-				className="viagent-nav"
-				aria-label={ __( 'Viagent sections', 'viagent' ) }
+				className="viagent-production-nav"
+				aria-label={ __( 'Viagent Production sections', 'viagent-production' ) }
 			>
 				{ TABS.map( ( item ) => (
 					<a
@@ -113,7 +113,7 @@ function App() {
 						{ item.label }
 						{ item.id === 'connections' &&
 							state?.connections > 0 && (
-								<span className="viagent-nav__count">
+								<span className="viagent-production-nav__count">
 									{ state.connections }
 								</span>
 							) }
@@ -121,7 +121,7 @@ function App() {
 				) ) }
 			</nav>
 
-			<main className="viagent-main">
+			<main className="viagent-production-main">
 				{ tab === 'overview' && (
 					<Overview
 						state={ state }
@@ -143,7 +143,7 @@ function App() {
 	);
 }
 
-const root = document.getElementById( 'viagent-root' );
+const root = document.getElementById( 'viagent-production-root' );
 if ( root ) {
 	createRoot( root ).render( <App /> );
 }

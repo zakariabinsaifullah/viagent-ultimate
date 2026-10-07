@@ -2,13 +2,13 @@
 /**
  * Content abilities: posts, pages and custom post types.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Log\Activity_Log;
-use Viagent\Security\Policy;
+use ViagentProduction\Log\Activity_Log;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_Post;
 
@@ -24,11 +24,11 @@ class Content {
 	 */
 	public static function register() {
 		wp_register_ability(
-			'viagent/list-post-types',
+			'viagent-production/list-post-types',
 			array(
-				'label'               => __( 'List post types', 'viagent' ),
-				'description'         => __( 'Lists content types you can work with (posts, pages and custom post types) with their taxonomies and whether they support the block editor.', 'viagent' ),
-				'category'            => 'viagent-content',
+				'label'               => __( 'List post types', 'viagent-production' ),
+				'description'         => __( 'Lists content types you can work with (posts, pages and custom post types) with their taxonomies and whether they support the block editor.', 'viagent-production' ),
+				'category'            => 'viagent-production-content',
 				'input_schema'        => array(),
 				'execute_callback'    => array( self::class, 'list_post_types' ),
 				'permission_callback' => static function () {
@@ -39,37 +39,37 @@ class Content {
 		);
 
 		wp_register_ability(
-			'viagent/list-posts',
+			'viagent-production/list-posts',
 			array(
-				'label'               => __( 'List posts', 'viagent' ),
-				'description'         => __( 'Lists posts, pages or items of any post type, newest first. Filter by status, search words, author or category/tag. Returns summaries; use get_post for full content.', 'viagent' ),
-				'category'            => 'viagent-content',
+				'label'               => __( 'List posts', 'viagent-production' ),
+				'description'         => __( 'Lists posts, pages or items of any post type, newest first. Filter by status, search words, author or category/tag. Returns summaries; use get_post for full content.', 'viagent-production' ),
+				'category'            => 'viagent-production-content',
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => array(
 						'post_type' => array(
 							'type'        => 'string',
 							'default'     => 'post',
-							'description' => __( 'Post type name, e.g. "post" or "page". See list_post_types.', 'viagent' ),
+							'description' => __( 'Post type name, e.g. "post" or "page". See list_post_types.', 'viagent-production' ),
 						),
 						'status'    => array(
 							'type'        => 'string',
 							'enum'        => array( 'any', 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
 							'default'     => 'any',
-							'description' => __( '"any" returns every status except trash.', 'viagent' ),
+							'description' => __( '"any" returns every status except trash.', 'viagent-production' ),
 						),
 						'search'    => array( 'type' => 'string' ),
 						'author'    => array(
 							'type'        => 'integer',
-							'description' => __( 'Author user ID.', 'viagent' ),
+							'description' => __( 'Author user ID.', 'viagent-production' ),
 						),
 						'category'  => array(
 							'type'        => 'string',
-							'description' => __( 'Category slug (posts only).', 'viagent' ),
+							'description' => __( 'Category slug (posts only).', 'viagent-production' ),
 						),
 						'tag'       => array(
 							'type'        => 'string',
-							'description' => __( 'Tag slug (posts only).', 'viagent' ),
+							'description' => __( 'Tag slug (posts only).', 'viagent-production' ),
 						),
 						'orderby'   => array(
 							'type'    => 'string',
@@ -104,11 +104,11 @@ class Content {
 		);
 
 		wp_register_ability(
-			'viagent/get-post',
+			'viagent-production/get-post',
 			array(
-				'label'               => __( 'Get post', 'viagent' ),
-				'description'         => __( 'Gets one post, page or custom post type item by ID, including its full block content, excerpt, categories/tags/terms, featured image and links.', 'viagent' ),
-				'category'            => 'viagent-content',
+				'label'               => __( 'Get post', 'viagent-production' ),
+				'description'         => __( 'Gets one post, page or custom post type item by ID, including its full block content, excerpt, categories/tags/terms, featured image and links.', 'viagent-production' ),
+				'category'            => 'viagent-production-content',
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => array(
@@ -140,9 +140,9 @@ class Content {
 		Abilities::add(
 			'create-post',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'Create post', 'viagent' ),
-				'description' => __( 'Creates a post, page or custom post type item. Content should be block markup (<!-- wp:paragraph --><p>…</p><!-- /wp:paragraph -->). Status defaults to "draft". Terms can be given as names (created if missing) or IDs.', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Create post', 'viagent-production' ),
+				'description' => __( 'Creates a post, page or custom post type item. Content should be block markup (<!-- wp:paragraph --><p>…</p><!-- /wp:paragraph -->). Status defaults to "draft". Terms can be given as names (created if missing) or IDs.', 'viagent-production' ),
 				'input'       => array_merge(
 					array(
 						'post_type' => array(
@@ -165,9 +165,9 @@ class Content {
 		Abilities::add(
 			'update-post',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'Update post', 'viagent' ),
-				'description' => __( 'Updates a post, page or custom post type item. Only the fields you pass are changed. To edit content, first read it with get_post, then send the full new block markup. The previous version is kept so the site owner can undo the change.', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Update post', 'viagent-production' ),
+				'description' => __( 'Updates a post, page or custom post type item. Only the fields you pass are changed. To edit content, first read it with get_post, then send the full new block markup. The previous version is kept so the site owner can undo the change.', 'viagent-production' ),
 				'input'       => array_merge(
 					array(
 						'id' => array(
@@ -189,9 +189,9 @@ class Content {
 		Abilities::add(
 			'delete-post',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'Delete post', 'viagent' ),
-				'description' => __( 'Moves a post, page or custom post type item to the trash (it can be restored with restore_post). Permanent deletion with force=true only works if the site owner allowed it.', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Delete post', 'viagent-production' ),
+				'description' => __( 'Moves a post, page or custom post type item to the trash (it can be restored with restore_post). Permanent deletion with force=true only works if the site owner allowed it.', 'viagent-production' ),
 				'input'       => array(
 					'id'    => array(
 						'type'    => 'integer',
@@ -200,7 +200,7 @@ class Content {
 					'force' => array(
 						'type'        => 'boolean',
 						'default'     => false,
-						'description' => __( 'Skip the trash and delete permanently.', 'viagent' ),
+						'description' => __( 'Skip the trash and delete permanently.', 'viagent-production' ),
 					),
 				),
 				'required'    => array( 'id' ),
@@ -215,9 +215,9 @@ class Content {
 		Abilities::add(
 			'restore-post',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'Restore post from trash', 'viagent' ),
-				'description' => __( 'Restores a trashed post, page or custom post type item. It comes back as a draft.', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Restore post from trash', 'viagent-production' ),
+				'description' => __( 'Restores a trashed post, page or custom post type item. It comes back as a draft.', 'viagent-production' ),
 				'input'       => array(
 					'id' => array(
 						'type'    => 'integer',
@@ -242,9 +242,9 @@ class Content {
 		Abilities::add(
 			'list-revisions',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'List revisions', 'viagent' ),
-				'description' => __( 'Lists saved revisions (earlier versions) of a post or page, newest first.', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'List revisions', 'viagent-production' ),
+				'description' => __( 'Lists saved revisions (earlier versions) of a post or page, newest first.', 'viagent-production' ),
 				'input'       => array(
 					'id' => array(
 						'type'    => 'integer',
@@ -263,9 +263,9 @@ class Content {
 		Abilities::add(
 			'restore-revision',
 			array(
-				'category'    => 'viagent-content',
-				'label'       => __( 'Restore revision', 'viagent' ),
-				'description' => __( 'Rolls a post or page back to an earlier revision (see list_revisions).', 'viagent' ),
+				'category'    => 'viagent-production-content',
+				'label'       => __( 'Restore revision', 'viagent-production' ),
+				'description' => __( 'Rolls a post or page back to an earlier revision (see list_revisions).', 'viagent-production' ),
 				'input'       => array(
 					'revision_id' => array(
 						'type'    => 'integer',
@@ -293,28 +293,28 @@ class Content {
 			'title'             => array( 'type' => 'string' ),
 			'content'           => array(
 				'type'        => 'string',
-				'description' => __( 'Block markup.', 'viagent' ),
+				'description' => __( 'Block markup.', 'viagent-production' ),
 			),
 			'excerpt'           => array( 'type' => 'string' ),
 			'status'            => array(
 				'type'        => 'string',
 				'enum'        => array( 'draft', 'pending', 'publish', 'future', 'private' ),
-				'description' => __( 'Use "future" with a date to schedule.', 'viagent' ),
+				'description' => __( 'Use "future" with a date to schedule.', 'viagent-production' ),
 			),
 			'slug'              => array( 'type' => 'string' ),
 			'date'              => array(
 				'type'        => 'string',
-				'description' => __( 'Publish date in site time, "YYYY-MM-DD HH:MM:SS".', 'viagent' ),
+				'description' => __( 'Publish date in site time, "YYYY-MM-DD HH:MM:SS".', 'viagent-production' ),
 			),
 			'parent'            => array(
 				'type'        => 'integer',
 				'minimum'     => 0,
-				'description' => __( 'Parent ID for hierarchical types such as pages.', 'viagent' ),
+				'description' => __( 'Parent ID for hierarchical types such as pages.', 'viagent-production' ),
 			),
 			'menu_order'        => array( 'type' => 'integer' ),
 			'template'          => array(
 				'type'        => 'string',
-				'description' => __( 'Page template slug; empty string for the default.', 'viagent' ),
+				'description' => __( 'Page template slug; empty string for the default.', 'viagent-production' ),
 			),
 			'comment_status'    => array(
 				'type' => 'string',
@@ -322,7 +322,7 @@ class Content {
 			),
 			'terms'             => array(
 				'type'                 => 'object',
-				'description'          => __( 'Terms per taxonomy, replacing existing ones, e.g. {"category": ["News"], "post_tag": ["ai", "wordpress"]}.', 'viagent' ),
+				'description'          => __( 'Terms per taxonomy, replacing existing ones, e.g. {"category": ["News"], "post_tag": ["ai", "wordpress"]}.', 'viagent-production' ),
 				'additionalProperties' => array(
 					'type'  => 'array',
 					'items' => array( 'type' => array( 'string', 'integer' ) ),
@@ -331,7 +331,7 @@ class Content {
 			'featured_image_id' => array(
 				'type'        => 'integer',
 				'minimum'     => 0,
-				'description' => __( 'Media library ID; 0 removes the featured image.', 'viagent' ),
+				'description' => __( 'Media library ID; 0 removes the featured image.', 'viagent-production' ),
 			),
 		);
 	}
@@ -361,7 +361,7 @@ class Content {
 			return $allowed;
 		}
 		if ( in_array( $status, array( 'publish', 'future', 'private' ), true ) && ! current_user_can( $type->cap->publish_posts ) ) {
-			return new WP_Error( 'viagent_cannot_publish', __( 'You are not allowed to publish this type of content. Save it as "pending" for review instead.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_cannot_publish', __( 'You are not allowed to publish this type of content. Save it as "pending" for review instead.', 'viagent-production' ) );
 		}
 		return true;
 	}
@@ -418,7 +418,7 @@ class Content {
 			if ( 0 === $image_id ) {
 				delete_post_thumbnail( $post );
 			} elseif ( ! wp_attachment_is_image( $image_id ) ) {
-				return new WP_Error( 'viagent_invalid_image', __( 'featured_image_id is not an image in the media library.', 'viagent' ) );
+				return new WP_Error( 'viagent_production_invalid_image', __( 'featured_image_id is not an image in the media library.', 'viagent-production' ) );
 			} else {
 				set_post_thumbnail( $post, $image_id );
 			}
@@ -436,7 +436,7 @@ class Content {
 		$post_type = $input['post_type'] ?? 'post';
 		$types     = self::post_types();
 		if ( ! isset( $types[ $post_type ] ) ) {
-			return new WP_Error( 'viagent_invalid_post_type', sprintf( /* translators: %s: post type */ __( 'Unknown post type "%s". Use list_post_types to see available types.', 'viagent' ), $post_type ) );
+			return new WP_Error( 'viagent_production_invalid_post_type', sprintf( /* translators: %s: post type */ __( 'Unknown post type "%s". Use list_post_types to see available types.', 'viagent-production' ), $post_type ) );
 		}
 
 		$input['status'] = $input['status'] ?? 'draft';
@@ -497,7 +497,7 @@ class Content {
 
 		$data = self::post_data( $input );
 		if ( empty( $data ) && ! isset( $input['terms'] ) && ! isset( $input['featured_image_id'] ) ) {
-			return new WP_Error( 'viagent_nothing_to_update', __( 'Pass at least one field to change.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_nothing_to_update', __( 'Pass at least one field to change.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'post', $post->ID );
@@ -591,11 +591,11 @@ class Content {
 
 		if ( ! empty( $input['force'] ) ) {
 			if ( ! Policy::allows_permanent_delete() ) {
-				return new WP_Error( 'viagent_permanent_delete_disabled', __( 'Permanent deletion is turned off on this site. Move the item to the trash instead (omit force).', 'viagent' ) );
+				return new WP_Error( 'viagent_production_permanent_delete_disabled', __( 'Permanent deletion is turned off on this site. Move the item to the trash instead (omit force).', 'viagent-production' ) );
 			}
 			$title = $post->post_title;
 			if ( ! wp_delete_post( $post->ID, true ) ) {
-				return new WP_Error( 'viagent_delete_failed', __( 'Could not delete the item.', 'viagent' ) );
+				return new WP_Error( 'viagent_production_delete_failed', __( 'Could not delete the item.', 'viagent-production' ) );
 			}
 			return array(
 				'id'      => $post->ID,
@@ -605,10 +605,10 @@ class Content {
 		}
 
 		if ( 'trash' === $post->post_status ) {
-			return new WP_Error( 'viagent_already_trashed', __( 'This item is already in the trash.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_already_trashed', __( 'This item is already in the trash.', 'viagent-production' ) );
 		}
 		if ( ! wp_trash_post( $post->ID ) ) {
-			return new WP_Error( 'viagent_delete_failed', __( 'Could not move the item to the trash.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_delete_failed', __( 'Could not move the item to the trash.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_undo(
@@ -637,10 +637,10 @@ class Content {
 			return $post;
 		}
 		if ( 'trash' !== $post->post_status ) {
-			return new WP_Error( 'viagent_not_trashed', __( 'This item is not in the trash.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_trashed', __( 'This item is not in the trash.', 'viagent-production' ) );
 		}
 		if ( ! wp_untrash_post( $post->ID ) ) {
-			return new WP_Error( 'viagent_restore_failed', __( 'Could not restore the item.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_restore_failed', __( 'Could not restore the item.', 'viagent-production' ) );
 		}
 
 		Activity_Log::set_object( 'post', $post->ID );
@@ -689,7 +689,7 @@ class Content {
 		$revision = wp_get_post_revision( (int) $input['revision_id'] );
 		$post     = $revision ? self::find( $revision->post_parent ) : null;
 		if ( ! $revision || is_wp_error( $post ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'No revision found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No revision found with that ID.', 'viagent-production' ) );
 		}
 
 		$editable = Policy::check_post_editable( $post );
@@ -701,7 +701,7 @@ class Content {
 		Activity_Log::set_undo( self::snapshot( $post ) );
 
 		if ( ! wp_restore_post_revision( $revision->ID ) ) {
-			return new WP_Error( 'viagent_restore_failed', __( 'Could not restore the revision.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_restore_failed', __( 'Could not restore the revision.', 'viagent-production' ) );
 		}
 		return self::summary( get_post( $post->ID ) );
 	}
@@ -721,7 +721,7 @@ class Content {
 		 *
 		 * @param \WP_Post_Type[] $types Post type objects keyed by name.
 		 */
-		return apply_filters( 'viagent_post_types', $types );
+		return apply_filters( 'viagent_production_post_types', $types );
 	}
 
 	/**
@@ -781,7 +781,7 @@ class Content {
 	public static function find( $id ) {
 		$post = get_post( $id );
 		if ( ! $post || ! isset( self::post_types()[ $post->post_type ] ) ) {
-			return new WP_Error( 'viagent_not_found', __( 'No post found with that ID.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'No post found with that ID.', 'viagent-production' ) );
 		}
 		return $post;
 	}
@@ -817,13 +817,13 @@ class Content {
 	public static function list_posts( $input ) {
 		$post_type = $input['post_type'] ?? 'post';
 		if ( ! isset( self::readable_post_types()[ $post_type ] ) ) {
-			return new WP_Error( 'viagent_invalid_post_type', sprintf( /* translators: %s: post type */ __( 'Unknown post type "%s". Use list_post_types to see available types.', 'viagent' ), $post_type ) );
+			return new WP_Error( 'viagent_production_invalid_post_type', sprintf( /* translators: %s: post type */ __( 'Unknown post type "%s". Use list_post_types to see available types.', 'viagent-production' ), $post_type ) );
 		}
 
 		$allowed = self::readable_statuses( $post_type );
 		$status  = $input['status'] ?? 'any';
 		if ( 'any' !== $status && ! in_array( $status, $allowed, true ) ) {
-			return new WP_Error( 'viagent_forbidden_status', __( 'You are not allowed to list items with that status.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_forbidden_status', __( 'You are not allowed to list items with that status.', 'viagent-production' ) );
 		}
 		// "any" never includes the trash.
 		$any = array_values( array_diff( $allowed, array( 'trash' ) ) );

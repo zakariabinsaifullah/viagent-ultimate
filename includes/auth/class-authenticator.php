@@ -2,13 +2,13 @@
 /**
  * Authenticates MCP requests and switches to the connected user.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Auth;
+namespace ViagentProduction\Auth;
 
-use Viagent\Auth\OAuth\OAuth;
-use Viagent\Security\Policy;
+use ViagentProduction\Auth\OAuth\OAuth;
+use ViagentProduction\Security\Policy;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -46,8 +46,8 @@ class Authenticator {
 	public static function authenticate( WP_REST_Request $request ) {
 		if ( Policy::is_paused() ) {
 			return new WP_Error(
-				'viagent_paused',
-				__( 'AI access to this site is paused by the site owner.', 'viagent' ),
+				'viagent_production_paused',
+				__( 'AI access to this site is paused by the site owner.', 'viagent-production' ),
 				array( 'status' => 503 )
 			);
 		}
@@ -60,8 +60,8 @@ class Authenticator {
 
 		if ( ! $connection ) {
 			return new WP_Error(
-				'viagent_unauthorized',
-				__( 'Missing or invalid Viagent key. Create a connection in WordPress under Viagent.', 'viagent' ),
+				'viagent_production_unauthorized',
+				__( 'Missing or invalid Viagent Production key. Create a connection in WordPress under Viagent Production.', 'viagent-production' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -74,7 +74,7 @@ class Authenticator {
 	}
 
 	/**
-	 * Reads the token from `Authorization: Bearer` or the `X-VIAGENT-Key` fallback
+	 * Reads the token from `Authorization: Bearer` or the `X-Viagent Production-Production-Key` fallback
 	 * (some hosts strip the Authorization header).
 	 *
 	 * @param WP_REST_Request $request Request.
@@ -85,7 +85,7 @@ class Authenticator {
 		if ( preg_match( '/^\s*Bearer\s+(\S+)\s*$/i', $header, $m ) ) {
 			return $m[1];
 		}
-		return trim( (string) $request->get_header( 'x_viagent_key' ) );
+		return trim( (string) $request->get_header( 'x_viagent_production_key' ) );
 	}
 
 	/**
@@ -143,7 +143,7 @@ class Authenticator {
 				'draft_only'    => $row->draft_only,
 				'compact'       => $row->compact ?? 0,
 				'credential_id' => $row->id,
-				'name'          => $row->client_name ? $row->client_name : __( 'AI app', 'viagent' ),
+				'name'          => $row->client_name ? $row->client_name : __( 'AI app', 'viagent-production' ),
 			)
 		);
 	}
@@ -173,7 +173,7 @@ class Authenticator {
 				'user_id'      => get_current_user_id(),
 				'access_level' => $level,
 				'draft_only'   => false,
-				'name'         => __( 'Application Password', 'viagent' ),
+				'name'         => __( 'Application Password', 'viagent-production' ),
 			)
 		);
 	}
@@ -187,8 +187,8 @@ class Authenticator {
 	 * @return WP_REST_Response
 	 */
 	public static function add_challenge_header( $response, $server, $request ) {
-		if ( 401 === $response->get_status() && 0 === strpos( $request->get_route(), '/viagent/v1/mcp' ) ) {
-			$challenge = 'Bearer realm="Viagent"';
+		if ( 401 === $response->get_status() && 0 === strpos( $request->get_route(), '/viagent-production/v1/mcp' ) ) {
+			$challenge = 'Bearer realm="Viagent Production"';
 			if ( OAuth::enabled() ) {
 				$challenge .= ', resource_metadata="' . OAuth::resource_metadata_url() . '", scope="mcp"';
 			}

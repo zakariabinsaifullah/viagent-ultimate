@@ -46,7 +46,7 @@ export default function Activity() {
 			await api.revert( reverting.id );
 			setNotice( {
 				status: 'success',
-				text: __( 'The change was undone.', 'viagent' ),
+				text: __( 'The change was undone.', 'viagent-production' ),
 			} );
 			await load();
 		} catch ( e ) {
@@ -61,29 +61,29 @@ export default function Activity() {
 	return (
 		<>
 			<ScreenHeader
-				title={ __( 'Activity', 'viagent' ) }
+				title={ __( 'Activity', 'viagent-production' ) }
 				description={ __(
 					'Everything AI apps did on your site. Undo content changes with one click. Entries are kept for 90 days.',
-					'viagent'
+					'viagent-production'
 				) }
 				actions={
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Show', 'viagent' ) }
+						label={ __( 'Show', 'viagent-production' ) }
 						hideLabelFromVision
 						value={ status }
 						options={ [
 							{
-								label: __( 'Changes only', 'viagent' ),
+								label: __( 'Changes only', 'viagent-production' ),
 								value: 'changes',
 							},
 							{
-								label: __( 'All activity', 'viagent' ),
+								label: __( 'All activity', 'viagent-production' ),
 								value: '',
 							},
 							{
-								label: __( 'Errors only', 'viagent' ),
+								label: __( 'Errors only', 'viagent-production' ),
 								value: 'error',
 							},
 						] }
@@ -107,30 +107,30 @@ export default function Activity() {
 			{ data === null && <Spinner /> }
 
 			{ data && data.items.length === 0 && (
-				<Card className="viagent-empty">
-					<h3>{ __( 'Nothing here yet', 'viagent' ) }</h3>
+				<Card className="viagent-production-empty">
+					<h3>{ __( 'Nothing here yet', 'viagent-production' ) }</h3>
 					<p>
 						{ __(
 							'When an AI app reads or changes something on your site, it shows up here.',
-							'viagent'
+							'viagent-production'
 						) }
 					</p>
 				</Card>
 			) }
 
 			{ data && data.items.length > 0 && (
-				<Card className="viagent-table-card">
-					<table className="viagent-table">
+				<Card className="viagent-production-table-card">
+					<table className="viagent-production-table">
 						<thead>
 							<tr>
-								<th>{ __( 'When', 'viagent' ) }</th>
-								<th>{ __( 'App', 'viagent' ) }</th>
-								<th>{ __( 'Action', 'viagent' ) }</th>
-								<th>{ __( 'Item', 'viagent' ) }</th>
-								<th>{ __( 'Result', 'viagent' ) }</th>
+								<th>{ __( 'When', 'viagent-production' ) }</th>
+								<th>{ __( 'App', 'viagent-production' ) }</th>
+								<th>{ __( 'Action', 'viagent-production' ) }</th>
+								<th>{ __( 'Item', 'viagent-production' ) }</th>
+								<th>{ __( 'Result', 'viagent-production' ) }</th>
 								<th>
 									<span className="screen-reader-text">
-										{ __( 'Actions', 'viagent' ) }
+										{ __( 'Actions', 'viagent-production' ) }
 									</span>
 								</th>
 							</tr>
@@ -142,7 +142,7 @@ export default function Activity() {
 										<td
 											data-label={ __(
 												'When',
-												'viagent'
+												'viagent-production'
 											) }
 											title={ dateI18n(
 												format,
@@ -154,17 +154,17 @@ export default function Activity() {
 										<td
 											data-label={ __(
 												'App',
-												'viagent'
+												'viagent-production'
 											) }
 										>
 											{ item.connection }
 											{ item.agent && (
-												<span className="viagent-via">
+												<span className="viagent-production-via">
 													{ sprintf(
 														/* translators: %s: program name, e.g. curl */
 														__(
 															'via %s',
-															'viagent'
+															'viagent-production'
 														),
 														item.agent
 													) }
@@ -174,12 +174,12 @@ export default function Activity() {
 										<td
 											data-label={ __(
 												'Action',
-												'viagent'
+												'viagent-production'
 											) }
 										>
 											<button
 												type="button"
-												className="viagent-link-button"
+												className="viagent-production-link-button"
 												aria-expanded={
 													open === item.id
 												}
@@ -193,7 +193,7 @@ export default function Activity() {
 											>
 												{ humanizeTool( item.tool ) }
 												<span
-													className="viagent-link-button__chevron"
+													className="viagent-production-link-button__chevron"
 													aria-hidden="true"
 												>
 													{ open === item.id
@@ -205,7 +205,7 @@ export default function Activity() {
 										<td
 											data-label={ __(
 												'Item',
-												'viagent'
+												'viagent-production'
 											) }
 										>
 											{ item.site && (
@@ -224,18 +224,18 @@ export default function Activity() {
 										<td
 											data-label={ __(
 												'Result',
-												'viagent'
+												'viagent-production'
 											) }
 										>
 											{ item.status === 'ok' ? (
 												<Badge tone="success">
-													{ __( 'Done', 'viagent' ) }
+													{ __( 'Done', 'viagent-production' ) }
 												</Badge>
 											) : (
 												<Badge tone="danger">
 													{ __(
 														'Failed',
-														'viagent'
+														'viagent-production'
 													) }
 												</Badge>
 											) }
@@ -243,12 +243,12 @@ export default function Activity() {
 												<Badge>
 													{ __(
 														'Undone',
-														'viagent'
+														'viagent-production'
 													) }
 												</Badge>
 											) }
 										</td>
-										<td className="viagent-table__actions">
+										<td className="viagent-production-table__actions">
 											{ item.can_revert && (
 												<Button
 													variant="secondary"
@@ -258,16 +258,16 @@ export default function Activity() {
 														setReverting( item )
 													}
 												>
-													{ __( 'Undo', 'viagent' ) }
+													{ __( 'Undo', 'viagent-production' ) }
 												</Button>
 											) }
 										</td>
 									</tr>
 									{ open === item.id && (
-										<tr className="viagent-table__details">
+										<tr className="viagent-production-table__details">
 											<td colSpan="6">
 												{ item.message && (
-													<p className="viagent-error-text">
+													<p className="viagent-production-error-text">
 														{ item.message }
 													</p>
 												) }
@@ -278,12 +278,12 @@ export default function Activity() {
 														2
 													) }
 												</pre>
-												<span className="viagent-muted">
+												<span className="viagent-production-muted">
 													{ sprintf(
 														/* translators: 1: tool name, 2: duration in ms */
 														__(
 															'Tool %1$s · %2$d ms',
-															'viagent'
+															'viagent-production'
 														),
 														item.tool,
 														item.duration_ms
@@ -300,18 +300,18 @@ export default function Activity() {
 			) }
 
 			{ data && data.total_pages > 1 && (
-				<div className="viagent-pagination">
+				<div className="viagent-production-pagination">
 					<Button
 						variant="secondary"
 						disabled={ page <= 1 }
 						onClick={ () => setPage( page - 1 ) }
 					>
-						{ __( 'Newer', 'viagent' ) }
+						{ __( 'Newer', 'viagent-production' ) }
 					</Button>
 					<span>
 						{ sprintf(
 							/* translators: 1: page, 2: total pages */
-							__( 'Page %1$d of %2$d', 'viagent' ),
+							__( 'Page %1$d of %2$d', 'viagent-production' ),
 							page,
 							data.total_pages
 						) }
@@ -321,14 +321,14 @@ export default function Activity() {
 						disabled={ page >= data.total_pages }
 						onClick={ () => setPage( page + 1 ) }
 					>
-						{ __( 'Older', 'viagent' ) }
+						{ __( 'Older', 'viagent-production' ) }
 					</Button>
 				</div>
 			) }
 
 			{ reverting && (
 				<Modal
-					title={ __( 'Undo this change?', 'viagent' ) }
+					title={ __( 'Undo this change?', 'viagent-production' ) }
 					onRequestClose={ () => setReverting( null ) }
 					size="small"
 				>
@@ -340,12 +340,12 @@ export default function Activity() {
 						</strong>
 					</p>
 					<p>{ reverting.undo_label }</p>
-					<div className="viagent-actions">
+					<div className="viagent-production-actions">
 						<Button
 							variant="tertiary"
 							onClick={ () => setReverting( null ) }
 						>
-							{ __( 'Cancel', 'viagent' ) }
+							{ __( 'Cancel', 'viagent-production' ) }
 						</Button>
 						<Button
 							variant="primary"
@@ -353,7 +353,7 @@ export default function Activity() {
 							disabled={ busy }
 							onClick={ revert }
 						>
-							{ __( 'Undo change', 'viagent' ) }
+							{ __( 'Undo change', 'viagent-production' ) }
 						</Button>
 					</div>
 				</Modal>

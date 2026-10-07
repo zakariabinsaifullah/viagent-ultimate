@@ -30,11 +30,11 @@ jobs:
             - name: Verify version matches tag
               run: |
                   TAG="${GITHUB_REF_NAME#v}"
-                  HEADER=$(grep -m1 -E '^\s*\*\s*Version:' viagent.php | sed -E 's/.*Version:\s*//' | tr -d '[:space:]')
+                  HEADER=$(grep -m1 -E '^\s*\*\s*Version:' viagent-production.php | sed -E 's/.*Version:\s*//' | tr -d '[:space:]')
                   STABLE=$(grep -m1 -E '^Stable tag:' readme.txt | sed -E 's/Stable tag:\s*//' | tr -d '[:space:]')
-                  echo "Tag: $TAG | viagent.php: $HEADER | readme.txt: $STABLE"
+                  echo "Tag: $TAG | viagent-production.php: $HEADER | readme.txt: $STABLE"
                   if [ "$TAG" != "$HEADER" ] || [ "$TAG" != "$STABLE" ]; then
-                      echo "::error::Tag $GITHUB_REF_NAME does not match viagent.php Version ($HEADER) and readme.txt Stable tag ($STABLE)."
+                      echo "::error::Tag $GITHUB_REF_NAME does not match viagent-production.php Version ($HEADER) and readme.txt Stable tag ($STABLE)."
                       exit 1
                   fi
 
@@ -63,21 +63,21 @@ jobs:
             - name: Prepare Release Artifact
               run: |
                   # 1. Create a build directory
-                  mkdir viagent
+                  mkdir viagent-production
 
                   # 2. Copy files to build dir
-                  rsync -rc --exclude-from='.distignore' --exclude '/viagent/' . viagent/
+                  rsync -rc --exclude-from='.distignore' --exclude '/viagent-production/' . viagent-production/
 
                   # 3. CLEANUP: Force remove any .DS_Store files that slipped through
-                  find viagent -name ".DS_Store" -type f -delete
+                  find viagent-production -name ".DS_Store" -type f -delete
 
                   # 4. Zip the clean directory
-                  zip -r viagent.zip viagent
+                  zip -r viagent-production.zip viagent-production
 
             - name: Create Release
               uses: ncipollo/release-action@v1.21.0
               with:
-                  artifacts: 'viagent.zip'
+                  artifacts: 'viagent-production.zip'
                   token: ${{ secrets.TOKEN }}
                   allowUpdates: true
                   makeLatest: true

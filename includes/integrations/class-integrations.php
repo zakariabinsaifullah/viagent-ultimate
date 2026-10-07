@@ -3,10 +3,10 @@
  * Optional integrations with popular plugins. Each one registers its tools only
  * when its plugin is active.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Integrations;
+namespace ViagentProduction\Integrations;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -61,11 +61,11 @@ class Integrations {
 			case 'woocommerce':
 				return 'WooCommerce';
 			case 'seo':
-				return __( 'SEO (Yoast SEO or Rank Math)', 'viagent' );
+				return __( 'SEO (Yoast SEO or Rank Math)', 'viagent-production' );
 			case 'forms':
-				return __( 'Forms (Contact Form 7, WPForms, Gravity Forms)', 'viagent' );
+				return __( 'Forms (Contact Form 7, WPForms, Gravity Forms)', 'viagent-production' );
 			case 'acf':
-				return __( 'Advanced Custom Fields', 'viagent' );
+				return __( 'Advanced Custom Fields', 'viagent-production' );
 		}
 		return $slug;
 	}

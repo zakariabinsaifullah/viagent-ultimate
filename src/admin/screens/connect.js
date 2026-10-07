@@ -25,56 +25,56 @@ import {
 } from '../components';
 import { deeplink, fillTemplate } from '../snippets';
 
-const settings = window.viagentSettings;
+const settings = window.viagentProductionSettings;
 
 const GROUPS = [
-	{ id: 'app', label: __( 'Chat apps', 'viagent' ) },
-	{ id: 'editor', label: __( 'Code editors', 'viagent' ) },
-	{ id: 'cli', label: __( 'Terminal agents', 'viagent' ) },
-	{ id: 'other', label: __( 'Something else', 'viagent' ) },
+	{ id: 'app', label: __( 'Chat apps', 'viagent-production' ) },
+	{ id: 'editor', label: __( 'Code editors', 'viagent-production' ) },
+	{ id: 'cli', label: __( 'Terminal agents', 'viagent-production' ) },
+	{ id: 'other', label: __( 'Something else', 'viagent-production' ) },
 ];
 
 const ACCESS = [
 	{
 		id: 'read',
-		title: __( 'Read only', 'viagent' ),
+		title: __( 'Read only', 'viagent-production' ),
 		description: __(
 			'Can look at your posts, pages, media and settings. Cannot change anything.',
-			'viagent'
+			'viagent-production'
 		),
-		example: __( '“Summarize my latest posts”', 'viagent' ),
+		example: __( '“Summarize my latest posts”', 'viagent-production' ),
 	},
 	{
 		id: 'content',
-		title: __( 'Write content', 'viagent' ),
+		title: __( 'Write content', 'viagent-production' ),
 		description: __(
 			'Can write and edit posts and pages, upload images, and manage categories and comments.',
-			'viagent'
+			'viagent-production'
 		),
-		example: __( '“Draft a blog post about our spring sale”', 'viagent' ),
+		example: __( '“Draft a blog post about our spring sale”', 'viagent-production' ),
 		recommended: true,
 	},
 	{
 		id: 'admin',
-		title: __( 'Site manager', 'viagent' ),
+		title: __( 'Site manager', 'viagent-production' ),
 		description: __(
 			'Everything above plus menus and basic site settings, and a read-only view of plugins, themes and users. Never site administration.',
-			'viagent'
+			'viagent-production'
 		),
-		example: __( '“Set my Contact page as the homepage”', 'viagent' ),
+		example: __( '“Set my Contact page as the homepage”', 'viagent-production' ),
 	},
 ];
 
 const EXAMPLE_PROMPTS = [
 	__(
 		'What is my WordPress site about? Give me a quick overview.',
-		'viagent'
+		'viagent-production'
 	),
 	__(
 		'Write a 600-word blog post about why our customers love us and save it as a draft.',
-		'viagent'
+		'viagent-production'
 	),
-	__( 'Find my posts that have no featured image.', 'viagent' ),
+	__( 'Find my posts that have no featured image.', 'viagent-production' ),
 ];
 
 function stepClass( index, step ) {
@@ -86,15 +86,15 @@ function stepClass( index, step ) {
 
 function Steps( { step } ) {
 	const labels = [
-		__( 'Choose your AI app', 'viagent' ),
-		__( 'Choose what it can do', 'viagent' ),
-		__( 'Connect', 'viagent' ),
+		__( 'Choose your AI app', 'viagent-production' ),
+		__( 'Choose what it can do', 'viagent-production' ),
+		__( 'Connect', 'viagent-production' ),
 	];
 	return (
-		<ol className="viagent-steps">
+		<ol className="viagent-production-steps">
 			{ labels.map( ( label, index ) => (
 				<li key={ label } className={ stepClass( index, step ) }>
-					<span className="viagent-steps__number">{ index + 1 }</span>
+					<span className="viagent-production-steps__number">{ index + 1 }</span>
 					{ label }
 				</li>
 			) ) }
@@ -129,12 +129,12 @@ function ClientStatus( { status } ) {
 		return null;
 	}
 	return status.status === 'connected' ? (
-		<span className="viagent-client__status is-connected">
-			{ __( 'Connected', 'viagent' ) }
+		<span className="viagent-production-client__status is-connected">
+			{ __( 'Connected', 'viagent-production' ) }
 		</span>
 	) : (
-		<span className="viagent-client__status is-waiting">
-			{ __( 'Set up · not connected yet', 'viagent' ) }
+		<span className="viagent-production-client__status is-waiting">
+			{ __( 'Set up · not connected yet', 'viagent-production' ) }
 		</span>
 	);
 }
@@ -145,16 +145,16 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 	);
 
 	return (
-		<div className="viagent-client-groups">
+		<div className="viagent-production-client-groups">
 			{ waiting.map( ( client ) => (
 				<Notice
 					key={ client.slug }
 					status="warning"
 					isDismissible={ false }
-					className="viagent-waiting-notice"
+					className="viagent-production-waiting-notice"
 					actions={ [
 						{
-							label: __( 'Show me how to finish', 'viagent' ),
+							label: __( 'Show me how to finish', 'viagent-production' ),
 							onClick: () => onHelp( client ),
 							variant: 'primary',
 						},
@@ -164,7 +164,7 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 						/* translators: %s: app name */
 						__(
 							'%s is set up but hasn’t connected to your site yet.',
-							'viagent'
+							'viagent-production'
 						),
 						client.name
 					) }
@@ -180,8 +180,8 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 				}
 				return (
 					<section key={ group.id }>
-						<h3 className="viagent-group-title">{ group.label }</h3>
-						<div className="viagent-client-grid">
+						<h3 className="viagent-production-group-title">{ group.label }</h3>
+						<div className="viagent-production-client-grid">
 							{ clients.map( ( client ) => {
 								const soon =
 									client.auth === 'oauth' && ! settings.oauth;
@@ -189,19 +189,19 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 								if ( soon ) {
 									badge = (
 										<Badge>
-											{ __( 'Coming soon', 'viagent' ) }
+											{ __( 'Coming soon', 'viagent-production' ) }
 										</Badge>
 									);
 								} else if ( client.auth === 'oauth' ) {
 									badge = (
 										<Badge tone="success">
-											{ __( 'Sign in', 'viagent' ) }
+											{ __( 'Sign in', 'viagent-production' ) }
 										</Badge>
 									);
 								} else if ( client.deeplink ) {
 									badge = (
 										<Badge tone="success">
-											{ __( 'One-click', 'viagent' ) }
+											{ __( 'One-click', 'viagent-production' ) }
 										</Badge>
 									);
 								}
@@ -209,7 +209,7 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 									<button
 										key={ client.slug }
 										type="button"
-										className={ `viagent-client ${
+										className={ `viagent-production-client ${
 											statuses[ client.slug ]
 												? `has-${ statuses[ client.slug ].status }`
 												: ''
@@ -217,24 +217,24 @@ function ChooseClient( { onSelect, statuses, onHelp } ) {
 										disabled={ soon }
 										onClick={ () => onSelect( client ) }
 									>
-										<span className="viagent-client__top">
+										<span className="viagent-production-client__top">
 											<ClientMark client={ client } />
 											{ badge }
 										</span>
-										<strong className="viagent-client__name">
+										<strong className="viagent-production-client__name">
 											{ client.name }
 										</strong>
-										<span className="viagent-client__tagline">
+										<span className="viagent-production-client__tagline">
 											{ client.tagline }
 										</span>
-										<span className="viagent-client__footer">
+										<span className="viagent-production-client__footer">
 											<ClientStatus
 												status={
 													statuses[ client.slug ]
 												}
 											/>
 											<span
-												className="viagent-client__arrow"
+												className="viagent-production-client__arrow"
 												aria-hidden="true"
 											>
 												→
@@ -262,19 +262,19 @@ function firstPrompt( client ) {
 		client.auth === 'oauth'
 			? sprintf(
 					/* translators: %s: site name */
-					__( 'my “%s” connector', 'viagent' ),
+					__( 'my “%s” connector', 'viagent-production' ),
 					settings.siteName
 				)
 			: sprintf(
 					/* translators: %s: server name */
-					__( 'the “%s” tools', 'viagent' ),
+					__( 'the “%s” tools', 'viagent-production' ),
 					settings.serverName
 				);
 	return sprintf(
 		/* translators: %s: connector or tools name */
 		__(
 			'Use %s to look at my WordPress site and give me a short overview: the site name, how many posts and pages it has, and which theme it uses.',
-			'viagent'
+			'viagent-production'
 		),
 		source
 	);
@@ -290,12 +290,12 @@ function firstPrompt( client ) {
  */
 function Section( { number, title, children } ) {
 	return (
-		<section className="viagent-section">
-			<h3 className="viagent-section__title">
-				<span className="viagent-section__number">{ number }</span>
+		<section className="viagent-production-section">
+			<h3 className="viagent-production-section__title">
+				<span className="viagent-production-section__number">{ number }</span>
 				{ title }
 			</h3>
-			<div className="viagent-section__body">{ children }</div>
+			<div className="viagent-production-section__body">{ children }</div>
 		</section>
 	);
 }
@@ -317,7 +317,7 @@ function FinishSteps( { client, start, inModal = false } ) {
 					number={ start }
 					title={ sprintf(
 						/* translators: %s: app name */
-						__( 'Check that %s can see your site', 'viagent' ),
+						__( 'Check that %s can see your site', 'viagent-production' ),
 						client.name
 					) }
 				>
@@ -328,26 +328,26 @@ function FinishSteps( { client, start, inModal = false } ) {
 				number={ client.verify ? start + 1 : start }
 				title={ sprintf(
 					/* translators: %s: app name */
-					__( 'Send this first message in %s', 'viagent' ),
+					__( 'Send this first message in %s', 'viagent-production' ),
 					client.name
 				) }
 			>
-				<div className="viagent-first-prompt">
+				<div className="viagent-production-first-prompt">
 					<p>{ prompt }</p>
 					<CopyButton
 						text={ prompt }
-						label={ __( 'Copy message', 'viagent' ) }
+						label={ __( 'Copy message', 'viagent-production' ) }
 					/>
 				</div>
-				<p className="viagent-muted">
+				<p className="viagent-production-muted">
 					{ inModal
 						? __(
 								'The first time, your AI asks for permission to use your site’s tools — choose “Allow”. Then come back here: the app will show as Connected.',
-								'viagent'
+								'viagent-production'
 							)
 						: __(
 								'The first time, your AI asks for permission to use your site’s tools — choose “Allow”. The box below turns green as soon as it connects.',
-								'viagent'
+								'viagent-production'
 							) }
 				</p>
 			</Section>
@@ -369,38 +369,38 @@ function HelpModal( { client, onClose, onRedo } ) {
 		<Modal
 			title={ sprintf(
 				/* translators: %s: app name */
-				__( 'Finish connecting %s', 'viagent' ),
+				__( 'Finish connecting %s', 'viagent-production' ),
 				client.name
 			) }
 			onRequestClose={ onClose }
-			className="viagent-help-modal"
+			className="viagent-production-help-modal"
 		>
-			<div className="viagent-connect-steps">
+			<div className="viagent-production-connect-steps">
 				{ settings.isLocal && bridge && (
 					<Notice status="warning" isDismissible={ false }>
 						{ __(
 							'This site runs on your computer and uses a development security certificate. Make sure the "env" section of your configuration also contains this line, then restart the app:',
-							'viagent'
+							'viagent-production'
 						) }
-						<code className="viagent-inline-code">
+						<code className="viagent-production-inline-code">
 							&quot;NODE_TLS_REJECT_UNAUTHORIZED&quot;:
 							&quot;0&quot;
 						</code>
 					</Notice>
 				) }
 				<FinishSteps client={ client } start={ 1 } inModal />
-				<p className="viagent-muted">
+				<p className="viagent-production-muted">
 					{ __(
 						'Still not working? Create a fresh connection and follow the steps again — the old one can be revoked under Connections.',
-						'viagent'
+						'viagent-production'
 					) }
 				</p>
-				<div className="viagent-actions">
+				<div className="viagent-production-actions">
 					<Button variant="tertiary" onClick={ onClose }>
-						{ __( 'Close', 'viagent' ) }
+						{ __( 'Close', 'viagent-production' ) }
 					</Button>
 					<Button variant="secondary" onClick={ onRedo }>
-						{ __( 'Set it up again', 'viagent' ) }
+						{ __( 'Set it up again', 'viagent-production' ) }
 					</Button>
 				</div>
 			</div>
@@ -438,34 +438,34 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 	};
 
 	return (
-		<div className="viagent-access">
+		<div className="viagent-production-access">
 			<div
-				className="viagent-access__cards"
+				className="viagent-production-access__cards"
 				role="group"
-				aria-label={ __( 'Access level', 'viagent' ) }
+				aria-label={ __( 'Access level', 'viagent-production' ) }
 			>
 				{ ACCESS.map( ( option ) => (
 					<button
 						key={ option.id }
 						type="button"
 						aria-pressed={ level === option.id }
-						className={ `viagent-access-card ${
+						className={ `viagent-production-access-card ${
 							level === option.id ? 'is-selected' : ''
 						}` }
 						onClick={ () => selectLevel( option.id ) }
 					>
-						<span className="viagent-access-card__title">
+						<span className="viagent-production-access-card__title">
 							{ option.title }
 							{ option.recommended && (
 								<Badge tone="success">
-									{ __( 'Recommended', 'viagent' ) }
+									{ __( 'Recommended', 'viagent-production' ) }
 								</Badge>
 							) }
 						</span>
-						<span className="viagent-access-card__description">
+						<span className="viagent-production-access-card__description">
 							{ option.description }
 						</span>
-						<span className="viagent-access-card__example">
+						<span className="viagent-production-access-card__example">
 							{ option.example }
 						</span>
 					</button>
@@ -473,20 +473,20 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 			</div>
 
 			{ level !== 'read' && (
-				<Card className="viagent-access__options">
+				<Card className="viagent-production-access__options">
 					<CardBody>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={ __( 'Drafts only (safest)', 'viagent' ) }
+							label={ __( 'Drafts only (safest)', 'viagent-production' ) }
 							help={
 								draftOnly
 									? __(
 											'The AI can create and edit drafts, but cannot publish, delete, or change anything visitors already see. You review and publish.',
-											'viagent'
+											'viagent-production'
 										)
 									: __(
 											'The AI can publish and delete directly. Deleted items go to the trash, and you can undo changes from the Activity screen.',
-											'viagent'
+											'viagent-production'
 										)
 							}
 							checked={ draftOnly }
@@ -499,21 +499,21 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'Connection name', 'viagent' ) }
+				label={ __( 'Connection name', 'viagent-production' ) }
 				help={ __(
 					'Helps you recognise it later, e.g. “Claude on my laptop”.',
-					'viagent'
+					'viagent-production'
 				) }
 				value={ name }
 				onChange={ setName }
 			/>
 
-			<p className="viagent-muted">
+			<p className="viagent-production-muted">
 				{ sprintf(
 					/* translators: %s: user display name */
 					__(
 						'The AI will act as you (%s), so it can never do more than your own account can. Site administration (plugins, themes, users, updates) is always blocked for AI apps.',
-						'viagent'
+						'viagent-production'
 					),
 					settings.user
 				) }
@@ -525,13 +525,13 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 				</Notice>
 			) }
 
-			<div className="viagent-actions">
+			<div className="viagent-production-actions">
 				<Button
 					variant="tertiary"
 					icon={ arrowLeft }
 					onClick={ onBack }
 				>
-					{ __( 'Back', 'viagent' ) }
+					{ __( 'Back', 'viagent-production' ) }
 				</Button>
 				<Button
 					variant="primary"
@@ -539,7 +539,7 @@ function ChooseAccess( { client, onBack, onCreated } ) {
 					disabled={ busy }
 					onClick={ create }
 				>
-					{ __( 'Create connection', 'viagent' ) }
+					{ __( 'Create connection', 'viagent-production' ) }
 				</Button>
 			</div>
 		</div>
@@ -575,19 +575,19 @@ function WaitForConnection( { isConnected, onDone, onAnother } ) {
 
 	if ( ! connected ) {
 		return (
-			<div className="viagent-waiting">
+			<div className="viagent-production-waiting">
 				<Spinner />
 				<div>
 					<strong>
 						{ __(
 							'Waiting for your AI app to connect…',
-							'viagent'
+							'viagent-production'
 						) }
 					</strong>
 					<p>
 						{ __(
 							'Finish the steps above and send the first message. This page updates by itself.',
-							'viagent'
+							'viagent-production'
 						) }
 					</p>
 				</div>
@@ -596,18 +596,18 @@ function WaitForConnection( { isConnected, onDone, onAnother } ) {
 	}
 
 	return (
-		<div className="viagent-success">
-			<span className="viagent-success__icon" aria-hidden="true">
+		<div className="viagent-production-success">
+			<span className="viagent-production-success__icon" aria-hidden="true">
 				✓
 			</span>
 			<h3>
 				{ __(
 					'Connected! Your AI can now work on your site.',
-					'viagent'
+					'viagent-production'
 				) }
 			</h3>
-			<p>{ __( 'Try asking it:', 'viagent' ) }</p>
-			<ul className="viagent-prompts">
+			<p>{ __( 'Try asking it:', 'viagent-production' ) }</p>
+			<ul className="viagent-production-prompts">
 				{ EXAMPLE_PROMPTS.map( ( prompt ) => (
 					<li key={ prompt }>
 						<span>{ prompt }</span>
@@ -615,18 +615,18 @@ function WaitForConnection( { isConnected, onDone, onAnother } ) {
 					</li>
 				) ) }
 			</ul>
-			<p className="viagent-muted">
+			<p className="viagent-production-muted">
 				{ __(
 					'Tip: many apps also offer ready-made tasks from your site, such as “Write a blog post” or “SEO check-up” — look in the “+” or / menu.',
-					'viagent'
+					'viagent-production'
 				) }
 			</p>
-			<div className="viagent-actions">
+			<div className="viagent-production-actions">
 				<Button variant="secondary" onClick={ onAnother }>
-					{ __( 'Connect another app', 'viagent' ) }
+					{ __( 'Connect another app', 'viagent-production' ) }
 				</Button>
 				<Button variant="primary" onClick={ onDone }>
-					{ __( 'Done', 'viagent' ) }
+					{ __( 'Done', 'viagent-production' ) }
 				</Button>
 			</div>
 		</div>
@@ -655,22 +655,22 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 	const snippet = fillTemplate( client.template, values );
 	const link = client.deeplink ? deeplink( client.deeplink, values ) : null;
 	const formatLabel = {
-		command: __( 'Command', 'viagent' ),
+		command: __( 'Command', 'viagent-production' ),
 		json: 'JSON',
 		toml: 'TOML',
 	}[ client.format ];
 
 	return (
-		<div className="viagent-connect-steps">
+		<div className="viagent-production-connect-steps">
 			<Notice status="warning" isDismissible={ false }>
 				{ __(
 					'Your connection key is shown only once. It is already included below — copy it now if you need it elsewhere. Treat it like a password.',
-					'viagent'
+					'viagent-production'
 				) }
 			</Notice>
 
 			<CopyField
-				label={ __( 'Connection key', 'viagent' ) }
+				label={ __( 'Connection key', 'viagent-production' ) }
 				value={ connection.key }
 				secret
 			/>
@@ -685,29 +685,29 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 				number={ 1 }
 				title={ sprintf(
 					/* translators: %s: app name */
-					__( 'Add your site to %s', 'viagent' ),
+					__( 'Add your site to %s', 'viagent-production' ),
 					client.name
 				) }
 			>
 				{ link && (
-					<div className="viagent-deeplink">
+					<div className="viagent-production-deeplink">
 						<Button variant="primary" href={ link } icon={ check }>
 							{ sprintf(
 								/* translators: %s: app name */
-								__( 'Add to %s', 'viagent' ),
+								__( 'Add to %s', 'viagent-production' ),
 								client.name
 							) }
 						</Button>
-						<span className="viagent-muted">
+						<span className="viagent-production-muted">
 							{ __(
 								'Opens the app and asks you to confirm.',
-								'viagent'
+								'viagent-production'
 							) }
 						</span>
 					</div>
 				) }
 
-				<ol className="viagent-instructions">
+				<ol className="viagent-production-instructions">
 					{ client.steps.map( ( step ) => (
 						<li key={ step }>{ step }</li>
 					) ) }
@@ -722,25 +722,25 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 					}
 				/>
 
-				<details className="viagent-details">
+				<details className="viagent-production-details">
 					<summary>
-						{ __( 'Manual setup details', 'viagent' ) }
+						{ __( 'Manual setup details', 'viagent-production' ) }
 					</summary>
 					<CopyField
 						label={ __(
 							'Server URL (Streamable HTTP)',
-							'viagent'
+							'viagent-production'
 						) }
 						value={ settings.endpoint }
 					/>
 					<CopyField
-						label={ __( 'Header', 'viagent' ) }
+						label={ __( 'Header', 'viagent-production' ) }
 						value={ `Authorization: Bearer ${ connection.key }` }
 					/>
-					<p className="viagent-muted">
+					<p className="viagent-production-muted">
 						{ __(
-							'If your server strips the Authorization header, send the key as “X-VIAGENT-Key” instead.',
-							'viagent'
+							'If your server strips the Authorization header, send the key as “X-Viagent Production-Production-Key” instead.',
+							'viagent-production'
 						) }
 					</p>
 					{ client.docs && (
@@ -753,17 +753,17 @@ function ConnectSteps( { client, connection, onDone, onAnother } ) {
 						>
 							{ sprintf(
 								/* translators: %s: app name */
-								__( '%s MCP documentation', 'viagent' ),
+								__( '%s MCP documentation', 'viagent-production' ),
 								client.name
 							) }
 						</Button>
 					) }
 				</details>
 				{ settings.isLocal && bridge && (
-					<p className="viagent-muted">
+					<p className="viagent-production-muted">
 						{ __(
 							'Because this site runs on your computer, the configuration includes a line that lets the bridge accept its local security certificate. Live sites don’t need it.',
-							'viagent'
+							'viagent-production'
 						) }
 					</p>
 				) }
@@ -804,14 +804,14 @@ function OAuthSteps( { client, onBack, onDone, onAnother } ) {
 	);
 
 	return (
-		<div className="viagent-connect-steps">
+		<div className="viagent-production-connect-steps">
 			{ settings.isLocal && (
 				<Notice status="warning" isDismissible={ false }>
 					{ sprintf(
 						/* translators: %s: app name */
 						__(
 							'This site runs on your computer, so %s (which runs in the cloud) cannot reach it. Publish the site or use a Studio preview or tunnel first — or connect an app on this computer instead, such as Claude Code, Claude Desktop or Cursor.',
-							'viagent'
+							'viagent-production'
 						),
 						client.name
 					) }
@@ -822,25 +822,25 @@ function OAuthSteps( { client, onBack, onDone, onAnother } ) {
 				number={ 1 }
 				title={ sprintf(
 					/* translators: %s: app name */
-					__( 'Add your site to %s', 'viagent' ),
+					__( 'Add your site to %s', 'viagent-production' ),
 					client.name
 				) }
 			>
 				<CopyField
-					label={ __( 'Your connector URL', 'viagent' ) }
+					label={ __( 'Your connector URL', 'viagent-production' ) }
 					value={ settings.endpoint }
 				/>
 
-				<ol className="viagent-instructions">
+				<ol className="viagent-production-instructions">
 					{ client.steps.map( ( step ) => (
 						<li key={ step }>{ step }</li>
 					) ) }
 				</ol>
 
-				<p className="viagent-muted">
+				<p className="viagent-production-muted">
 					{ __(
 						'No key needed: you’ll sign in to WordPress and choose what the app may do. You can disconnect it any time.',
-						'viagent'
+						'viagent-production'
 					) }
 				</p>
 
@@ -859,7 +859,7 @@ function OAuthSteps( { client, onBack, onDone, onAnother } ) {
 					>
 						{ sprintf(
 							/* translators: %s: app name */
-							__( '%s’s official setup guide', 'viagent' ),
+							__( '%s’s official setup guide', 'viagent-production' ),
 							client.name
 						) }
 					</Button>
@@ -874,13 +874,13 @@ function OAuthSteps( { client, onBack, onDone, onAnother } ) {
 				onAnother={ onAnother }
 			/>
 
-			<div className="viagent-actions">
+			<div className="viagent-production-actions">
 				<Button
 					variant="tertiary"
 					icon={ arrowLeft }
 					onClick={ onBack }
 				>
-					{ __( 'Back', 'viagent' ) }
+					{ __( 'Back', 'viagent-production' ) }
 				</Button>
 			</div>
 		</div>
@@ -913,25 +913,25 @@ export default function Connect( { navigate } ) {
 	};
 
 	const titles = {
-		1: __( 'Which AI app do you want to connect?', 'viagent' ),
+		1: __( 'Which AI app do you want to connect?', 'viagent-production' ),
 		2: sprintf(
 			/* translators: %s: app name */
-			__( 'What should %s be allowed to do?', 'viagent' ),
+			__( 'What should %s be allowed to do?', 'viagent-production' ),
 			client?.name
 		),
 		3: sprintf(
 			/* translators: %s: app name */
-			__( 'Connect %s', 'viagent' ),
+			__( 'Connect %s', 'viagent-production' ),
 			client?.name
 		),
 	};
 
 	return (
-		<div className="viagent-connect">
+		<div className="viagent-production-connect">
 			<Steps step={ step } />
 			<Card>
-				<CardBody className="viagent-connect__body">
-					<div className="viagent-connect__title">
+				<CardBody className="viagent-production-connect__body">
+					<div className="viagent-production-connect__title">
 						{ client && <ClientMark client={ client } /> }
 						<h2>{ titles[ step ] }</h2>
 					</div>

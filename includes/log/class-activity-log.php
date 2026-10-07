@@ -5,25 +5,25 @@
  * Abilities describe what they touched with `set_object()` and how to undo it
  * with `set_undo()`; the MCP server records the call afterwards.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Log;
+namespace ViagentProduction\Log;
 
-use Viagent\Auth\Connection;
-use Viagent\Installer;
+use ViagentProduction\Auth\Connection;
+use ViagentProduction\Installer;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Viagent Production's own tables; rows change on nearly every request (authentication, logging), so object caching would not help.
 
 /**
  * Activity log.
  */
 class Activity_Log {
 
-	const PRUNE_HOOK     = 'viagent_prune_activity';
+	const PRUNE_HOOK     = 'viagent_production_prune_activity';
 	const MAX_ARG_LENGTH = 2000;
 
 	/**
@@ -215,14 +215,14 @@ class Activity_Log {
 
 		$entry = self::get( $id );
 		if ( ! $entry ) {
-			return new WP_Error( 'viagent_not_found', __( 'Activity entry not found.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_found', __( 'Activity entry not found.', 'viagent-production' ) );
 		}
 		if ( $entry->reverted_at ) {
-			return new WP_Error( 'viagent_already_reverted', __( 'This change was already reverted.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_already_reverted', __( 'This change was already reverted.', 'viagent-production' ) );
 		}
 		$undo = $entry->undo_data ? json_decode( $entry->undo_data, true ) : null;
 		if ( ! is_array( $undo ) || empty( $undo['action'] ) ) {
-			return new WP_Error( 'viagent_not_revertable', __( 'This change cannot be reverted automatically.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_not_revertable', __( 'This change cannot be reverted automatically.', 'viagent-production' ) );
 		}
 
 		$switched = ! empty( $entry->site_id ) && is_multisite() && get_current_blog_id() !== (int) $entry->site_id;
@@ -255,7 +255,7 @@ class Activity_Log {
 		$post_id = (int) ( $undo['post_id'] ?? 0 );
 
 		if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-			return new WP_Error( 'viagent_forbidden', __( 'You are not allowed to change this item.', 'viagent' ) );
+			return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to change this item.', 'viagent-production' ) );
 		}
 
 		switch ( $undo['action'] ) {
@@ -272,10 +272,10 @@ class Activity_Log {
 				return is_wp_error( $result ) ? $result : true;
 
 			case 'trash_post':
-				return wp_trash_post( $post_id ) ? true : new WP_Error( 'viagent_revert_failed', __( 'Could not move the item to the trash.', 'viagent' ) );
+				return wp_trash_post( $post_id ) ? true : new WP_Error( 'viagent_production_revert_failed', __( 'Could not move the item to the trash.', 'viagent-production' ) );
 
 			case 'untrash_post':
-				return wp_untrash_post( $post_id ) ? true : new WP_Error( 'viagent_revert_failed', __( 'Could not restore the item from the trash.', 'viagent' ) );
+				return wp_untrash_post( $post_id ) ? true : new WP_Error( 'viagent_production_revert_failed', __( 'Could not restore the item from the trash.', 'viagent-production' ) );
 
 			case 'restore_meta':
 				if ( null === $undo['value'] ) {
@@ -301,7 +301,7 @@ class Activity_Log {
 
 			case 'restore_options':
 				if ( ! current_user_can( 'manage_options' ) ) {
-					return new WP_Error( 'viagent_forbidden', __( 'You are not allowed to change settings.', 'viagent' ) );
+					return new WP_Error( 'viagent_production_forbidden', __( 'You are not allowed to change settings.', 'viagent-production' ) );
 				}
 				foreach ( (array) $undo['options'] as $name => $value ) {
 					update_option( $name, $value );
@@ -315,12 +315,12 @@ class Activity_Log {
 		 * @param true|WP_Error|null $result Null when no handler took the action.
 		 * @param array              $undo   Undo instructions.
 		 */
-		$result = apply_filters( 'viagent_apply_undo', null, $undo );
+		$result = apply_filters( 'viagent_production_apply_undo', null, $undo );
 		if ( null !== $result ) {
 			return $result;
 		}
 
-		return new WP_Error( 'viagent_not_revertable', __( 'This change cannot be reverted automatically.', 'viagent' ) );
+		return new WP_Error( 'viagent_production_not_revertable', __( 'This change cannot be reverted automatically.', 'viagent-production' ) );
 	}
 
 	/**
@@ -334,7 +334,7 @@ class Activity_Log {
 		 *
 		 * @param int $days Days. Default 90.
 		 */
-		$days  = max( 1, (int) apply_filters( 'viagent_activity_retention_days', 90 ) );
+		$days  = max( 1, (int) apply_filters( 'viagent_production_activity_retention_days', 90 ) );
 		$table = Installer::table( 'activity' );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE created_at < %s', $table, gmdate( 'Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS ) ) );
 	}

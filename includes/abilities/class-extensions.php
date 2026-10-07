@@ -3,12 +3,12 @@
  * Plugin and theme abilities. Read-only: installing, activating and switching
  * plugins or themes is left to people in the WordPress dashboard.
  *
- * @package Viagent
+ * @package ViagentProduction
  */
 
-namespace Viagent\Abilities;
+namespace ViagentProduction\Abilities;
 
-use Viagent\Security\Policy;
+use ViagentProduction\Security\Policy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,9 +24,9 @@ class Extensions {
 		Abilities::add(
 			'list-plugins',
 			array(
-				'category'    => 'viagent-extensions',
-				'label'       => __( 'List plugins', 'viagent' ),
-				'description' => __( 'Lists installed plugins with version, active state and whether an update is available.', 'viagent' ),
+				'category'    => 'viagent-production-extensions',
+				'label'       => __( 'List plugins', 'viagent-production' ),
+				'description' => __( 'Lists installed plugins with version, active state and whether an update is available.', 'viagent-production' ),
 				'execute'     => array( self::class, 'list_plugins' ),
 				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
@@ -36,9 +36,9 @@ class Extensions {
 		Abilities::add(
 			'list-themes',
 			array(
-				'category'    => 'viagent-extensions',
-				'label'       => __( 'List themes', 'viagent' ),
-				'description' => __( 'Lists installed themes and which one is active.', 'viagent' ),
+				'category'    => 'viagent-production-extensions',
+				'label'       => __( 'List themes', 'viagent-production' ),
+				'description' => __( 'Lists installed themes and which one is active.', 'viagent-production' ),
 				'execute'     => array( self::class, 'list_themes' ),
 				'permission'  => 'manage_options',
 				'meta'        => Abilities::read_meta( Policy::ADMIN ),
