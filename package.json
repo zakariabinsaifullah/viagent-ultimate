@@ -1,6 +1,6 @@
 {
 	"name": "viagent-production",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"private": true,
 	"description": "Connect your WordPress site to AI agents with MCP.",
 	"license": "GPL-2.0-or-later",

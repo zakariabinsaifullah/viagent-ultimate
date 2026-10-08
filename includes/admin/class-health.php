@@ -36,6 +36,7 @@ class Health {
 						self::check_permalinks(),
 						self::check_https(),
 						self::check_public(),
+						self::check_file_editing(),
 					)
 				)
 			),
@@ -132,6 +133,30 @@ class Health {
 			__( 'HTTPS', 'viagent-production' ),
 			__( 'Your site does not use HTTPS, so connection keys travel unencrypted. Web apps like Claude.ai and ChatGPT require HTTPS.', 'viagent-production' ),
 			__( 'Ask your host to enable a free SSL certificate, then switch to https:// in Settings → General.', 'viagent-production' )
+		);
+	}
+
+	/**
+	 * File editing turned off in wp-config.php, which also stops Full control
+	 * apps from reading or editing theme and plugin code.
+	 *
+	 * @return array|null
+	 */
+	private static function check_file_editing() {
+		if ( '' === Policy::file_editing_problem() ) {
+			return null;
+		}
+		$mods = defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS;
+		return self::result(
+			'file_editing',
+			'info',
+			__( 'Theme and plugin code', 'viagent-production' ),
+			$mods
+				? __( 'Your wp-config.php sets DISALLOW_FILE_MODS, so AI apps (even with Full control) cannot read or edit theme and plugin files, or install and update plugins and themes. Many hosts and security plugins set this on purpose.', 'viagent-production' )
+				: __( 'Your wp-config.php sets DISALLOW_FILE_EDIT, so AI apps (even with Full control) cannot read or edit theme and plugin files. Many hosts and security plugins set this on purpose.', 'viagent-production' ),
+			$mods
+				? __( 'If you want AI apps to work with code, remove the DISALLOW_FILE_MODS line from wp-config.php (or ask your host). Everything else keeps working without it.', 'viagent-production' )
+				: __( 'If you want AI apps to work with code, remove the DISALLOW_FILE_EDIT line from wp-config.php, or set it to false (or ask your host / check your security plugin). Everything else keeps working without it.', 'viagent-production' )
 		);
 	}
 

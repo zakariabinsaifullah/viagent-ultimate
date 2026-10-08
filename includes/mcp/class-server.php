@@ -218,6 +218,7 @@ class Server {
 		if ( true === $result ) {
 			$started = microtime( true );
 			Activity_Log::begin();
+			Policy::take_denial();
 			try {
 				$result = Tool_Registry::call( $tools[ $name ], $arguments );
 			} catch ( \Throwable $e ) {
@@ -273,6 +274,10 @@ class Server {
 	 */
 	private static function error_text( WP_Error $error ) {
 		if ( 'ability_invalid_permissions' === $error->get_error_code() ) {
+			$reason = Policy::take_denial();
+			if ( '' !== $reason ) {
+				return 'Error: ' . $reason . ' (forbidden)';
+			}
 			return sprintf(
 				'Error: The connected user "%s" is not allowed to do this. If it is needed, ask the site owner to grant more access in WordPress → Viagent Production. (forbidden)',
 				wp_get_current_user()->user_login

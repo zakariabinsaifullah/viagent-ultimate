@@ -140,7 +140,19 @@ class Files {
 	 * @return bool
 	 */
 	public static function can_edit( $input = array() ) {
-		return current_user_can( 'plugin' === ( $input['type'] ?? '' ) ? 'edit_plugins' : 'edit_themes' );
+		if ( current_user_can( 'plugin' === ( $input['type'] ?? '' ) ? 'edit_plugins' : 'edit_themes' ) ) {
+			return true;
+		}
+
+		// Tell the AI the real reason; otherwise it only hears "not allowed" and blames the access level.
+		$problem = Policy::file_editing_problem();
+		if ( '' !== $problem ) {
+			return Policy::deny( $problem );
+		}
+		if ( is_multisite() && ! is_super_admin() ) {
+			return Policy::deny( __( 'On a multisite network only super admins may read or edit theme and plugin files. Connect the AI app as a super admin account to use these tools.', 'viagent-production' ) );
+		}
+		return Policy::deny( __( 'The WordPress account this AI app is connected as is not an administrator, so it cannot read or edit theme and plugin files. Connect the app as an administrator to use these tools.', 'viagent-production' ) );
 	}
 
 	/**

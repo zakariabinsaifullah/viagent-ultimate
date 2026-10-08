@@ -349,6 +349,55 @@ class Policy {
 	}
 
 	/**
+	 * Why the last permission check was refused, for the AI. WordPress
+	 * replaces a permission callback's reason with a generic "not allowed",
+	 * so callbacks record it here and the MCP server reports it.
+	 *
+	 * @var string
+	 */
+	private static $denial = '';
+
+	/**
+	 * Records why a permission check is refused and returns false, for use as
+	 * `return Policy::deny( … );` in permission callbacks.
+	 *
+	 * @param string $reason Plain-language reason.
+	 * @return false
+	 */
+	public static function deny( $reason ) {
+		self::$denial = (string) $reason;
+		return false;
+	}
+
+	/**
+	 * Returns and clears the reason recorded by deny().
+	 *
+	 * @return string
+	 */
+	public static function take_denial() {
+		$reason       = self::$denial;
+		self::$denial = '';
+		return $reason;
+	}
+
+	/**
+	 * Why WordPress does not let anyone on this site read or edit theme or
+	 * plugin files, or '' when it does. The setting lives in wp-config.php
+	 * and applies to people in the dashboard too.
+	 *
+	 * @return string
+	 */
+	public static function file_editing_problem() {
+		if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) {
+			return __( 'This site\'s wp-config.php sets DISALLOW_FILE_MODS to true, which turns off theme and plugin file editing (and installing or updating plugins and themes) for everyone, including administrators. This is not a Viagent Production access level setting: the site owner (or host) must remove that line from wp-config.php to allow it.', 'viagent-production' );
+		}
+		if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+			return __( 'This site\'s wp-config.php sets DISALLOW_FILE_EDIT to true, which turns off reading and editing theme and plugin files for everyone, including administrators. This is not a Viagent Production access level setting: the site owner (or host or a security plugin) must remove that line from wp-config.php, or set it to false, to allow it.', 'viagent-production' );
+		}
+		return '';
+	}
+
+	/**
 	 * Whether the current MCP connection is limited to drafts.
 	 *
 	 * @return bool
